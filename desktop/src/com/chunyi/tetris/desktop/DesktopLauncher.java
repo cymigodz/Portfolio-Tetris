@@ -2,7 +2,7 @@ package com.chunyi.tetris.desktop;
 
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
-import com.chunyi.tetris.Game;
+import com.chunyi.tetris.TetrisGame;
 
 public class DesktopLauncher {
 
@@ -11,7 +11,7 @@ public class DesktopLauncher {
 
 		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
 
-		config.title = "The Tetris Game";
+		config.title = "The Tetris TetrisGame";
 
 		config.width = 1;
 		config.height = 1;
@@ -22,7 +22,7 @@ public class DesktopLauncher {
 		config.backgroundFPS = 60;
 		config.foregroundFPS = 60;
 
-		new LwjglApplication(new Game(), config);
+		new LwjglApplication(new TetrisGame(), config);
 
 	}
 

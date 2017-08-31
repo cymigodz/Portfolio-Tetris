@@ -20,4 +20,5 @@ The game is pretty simple and i am not going to add any crazy flavor to it, rath
 ### 2017-08-31 16:40 Writing the codes for the settings, such as desktop window sizes, saving and retrieving of user settings etc.
 
 #Credits:
-* Various Free UI Packs by [Kenney.nl](www.kenney.nl)
+* Various Free UI Packs and Fonts by [Kenney.nl](www.kenney.nl)
+* [8 Bit Wonder Font by Joiro Hatagaya](http://www.dafont.com/8bit-wonder.font)
