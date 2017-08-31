@@ -5,7 +5,7 @@ I have done Tetris years ago , however i lost the codes and it wasn't fully comp
 
 The game is pretty simple and i am not going to add any crazy flavor to it, rather treat it like a warm up after serving two years of national service.
 
-#Details
+# Details
 * Platforms: Windows, Android
 * Writen in: Java (LibGdx)
 
@@ -29,6 +29,6 @@ The game is pretty simple and i am not going to add any crazy flavor to it, rath
 * Load time on start up has drastically increased, maybe because of all the excess textures in the assets folder
 
 
-#Credits:
+# Credits:
 * Various Free UI Packs and Fonts by [Kenney.nl](www.kenney.nl)
 * [8 Bit Wonder Font by Joiro Hatagaya](http://www.dafont.com/8bit-wonder.font)
