@@ -11,7 +11,7 @@ The game is pretty simple and i am not going to add any crazy flavor to it, rath
 
 # Structure
 * Core game logics are under [here](https://github.com/cymigodz/Portfolio-Tetris/tree/master/core/src/com/chunyi/tetris)
-* Platform specific launchers at [desktop](https://github.com/cymigodz/Portfolio-Tetris/desktop/src/com/chunyi/tetris/desktop/) and [android](https://github.com/cymigodz/Portfolio-Tetris/tree/master/android/src/com/chunyi/tetris)
+* Platform specific launchers at [desktop](https://github.com/cymigodz/Portfolio-Tetris/tree/master/desktop/src/com/chunyi/tetris/desktop) and [android](https://github.com/cymigodz/Portfolio-Tetris/tree/master/android/src/com/chunyi/tetris)
 
 # Rules
 * Following [Super Rotation System](http://tetris.wikia.com/wiki/SRS)
