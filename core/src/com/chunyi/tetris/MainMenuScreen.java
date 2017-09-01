@@ -43,8 +43,8 @@ public class MainMenuScreen implements Screen {
         //BACKGROUND
         NinePatch bgPatch = new NinePatch(new Texture(Gdx.files.internal("sprite/uipack_fixed/PNG/grey_panel.png")),10,10,10,10);
         background = new Image(new NinePatchDrawable(bgPatch));
-        background.setWidth(game.DISPLAY_WIDTH/5*3);
         background.setHeight(game.DISPLAY_HEIGHT/10*9);
+        background.setWidth(background.getHeight()/15*8);
         background.setPosition((game.DISPLAY_WIDTH/2) - (background.getWidth()/2), game.DISPLAY_HEIGHT/2 - background.getHeight()/2);
         stage.addActor(background);
 

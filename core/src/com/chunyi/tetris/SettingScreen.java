@@ -13,6 +13,7 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable;
@@ -23,6 +24,7 @@ public class SettingScreen implements Screen {
     //Variables
     final TetrisGame game;
     private Stage stage;
+    private Image background;
 
     public SettingScreen(final TetrisGame game) {
         this.game = game;
@@ -30,6 +32,14 @@ public class SettingScreen implements Screen {
         //STAGE
         stage = new Stage(new ScreenViewport(), game.spritebatch);
         Gdx.input.setInputProcessor(stage);
+
+        //BACKGROUND
+        NinePatch bgPatch = new NinePatch(new Texture(Gdx.files.internal("sprite/uipack_fixed/PNG/grey_panel.png")),10,10,10,10);
+        background = new Image(new NinePatchDrawable(bgPatch));
+        background.setHeight(game.DISPLAY_HEIGHT/10*9);
+        background.setWidth(background.getHeight()/15*8);
+        background.setPosition((game.DISPLAY_WIDTH/2) - (background.getWidth()/2), game.DISPLAY_HEIGHT/2 - background.getHeight()/2);
+        stage.addActor(background);
 
     }
 
