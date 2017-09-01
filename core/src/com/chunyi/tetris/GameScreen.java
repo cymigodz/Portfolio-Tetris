@@ -16,7 +16,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
-import java.util.Timer;
+import java.util.Random;
 
 public class GameScreen implements Screen {
 
@@ -110,124 +110,39 @@ public class GameScreen implements Screen {
     //STAGE ELEMENTS
     private Stage stage;
     private Image background;
+    //TICK CONTROL VARIABLE
+    private Float timer;
+    private Float rotateTimer;
+
+    //DEVELOPING STAGE ELEMENTS
     private TextField input_Type, input_Rotation, input_X, input_Y;
     private TextField.TextFieldStyle inputStyle_Type, inputStyle_Rotation, inputStyle_X, inputStyle_Y;
-    private TextButton spawnBtn,lockBtn;
+    private TextButton rotateRBtn,rotateLBtn, lockBtn,resetBtn,leftBtn,rightBtn,dropBtn;
 
 
     private Float varRowHeight, varColWidth;
+
+    //Exact coordinates for each grid
     private Float[] coordRow, coordCol;
-
-    private Image [] activeTetromino = new Image[4];
-    private Boolean hasActiveTetromino = false;
+    //Holds gameBoard array idex for current active tetromino
+    private Integer [][] activeTetromino = new Integer[][]{{0,0},{0,0},{0,0},{0,0}};
+    //Holds characteristics for active tetromino
     private Integer activeType, activeRotation;
+    private Integer nextSpawnType, nextSpawnX = 4, nextSpawnY = 18;
+    //Holds image/actor for all tetrominoes on the board
+    private Image [][] gameBoard = new Image[10][20];
 
-    private float timer = 0.0f;
+
+    //FLAGS
+    private Boolean hasActiveTetromino = false;
+    private Boolean isGameOver = false;
 
 
     public GameScreen(final TetrisGame game) {
         this.game = game;
 
-        //STAGE
-        stage = new Stage(new ScreenViewport(), game.spritebatch);
-        Gdx.input.setInputProcessor(stage);
-
-        //BACKGROUND
-        NinePatch bgPatch = new NinePatch(new Texture(Gdx.files.internal("sprite/uipack_fixed/PNG/grey_panel.png")),10,10,10,10);
-        background = new Image(new NinePatchDrawable(bgPatch));
-        background.setHeight(game.DISPLAY_HEIGHT/10*9);
-        background.setWidth(background.getHeight()/15*8);
-        background.setPosition((game.DISPLAY_WIDTH/2) - (background.getWidth()/2), game.DISPLAY_HEIGHT/2 - background.getHeight()/2);
-        stage.addActor(background);
-
-        initializeParameters();
-
-
-
-        NinePatch btnPatch = new NinePatch(new Texture(Gdx.files.internal("sprite/uipack_fixed/PNG/grey_button06.png")),10,10,10,10);
-
-        inputStyle_Type = new TextField.TextFieldStyle(game.normalFont1, Color.BLACK,
-                new Image(new Texture(Gdx.files.internal("sprite/uipack_fixed/PNG/blue_tick.png"))).getDrawable(),
-                new Image(new Texture(Gdx.files.internal("sprite/puzzlepack/png/selectorA.png"))).getDrawable(),
-                new NinePatchDrawable(btnPatch));
-
-        input_Type = new TextField("1", inputStyle_Type);
-        input_Type.setHeight(game.normalFont1.getLineHeight()*2f);
-        input_Type.setPosition(background.getX(), background.getY()-input_Type.getHeight()*1.1f);
-        input_Type.setMaxLength(1);
-        input_Type.setWidth((new GlyphLayout(game.normalFont1, "555")).width);
-
-        input_Rotation = new TextField("1", inputStyle_Type);
-        input_Rotation.setHeight(game.normalFont1.getLineHeight()*2f);
-        input_Rotation.setPosition(input_Type.getX() + input_Type.getWidth(), background.getY()-input_Type.getHeight()*1.1f);
-        input_Rotation.setMaxLength(1);
-        input_Rotation.setWidth((new GlyphLayout(game.normalFont1, "555")).width);
-
-        input_X = new TextField("5", inputStyle_Type);
-        input_X.setHeight(game.normalFont1.getLineHeight()*2f);
-        input_X.setPosition(input_Rotation.getX() + input_Rotation.getWidth(), background.getY()-input_Type.getHeight()*1.1f);
-        input_X.setMaxLength(2);
-        input_X.setWidth((new GlyphLayout(game.normalFont1, "1234")).width);
-
-        input_Y = new TextField("15", inputStyle_Type);
-        input_Y.setHeight(game.normalFont1.getLineHeight()*2f);
-        input_Y.setPosition(input_X.getX() + input_X.getWidth(), background.getY()-input_Type.getHeight()*1.1f);
-        input_Y.setMaxLength(2);
-        input_Y.setWidth((new GlyphLayout(game.normalFont1, "1234")).width);
-
-
-        NinePatch upPatch = new NinePatch(new Texture(Gdx.files.internal("sprite/uipack_fixed/PNG/blue_button" + "09.png")),10,10,10,10);
-        NinePatchDrawable upPatchDrawable = new NinePatchDrawable(upPatch);
-        NinePatch downPatch = new NinePatch(new Texture(Gdx.files.internal("sprite/uipack_fixed/PNG/blue_button" + "10.png")),10,10,10,10);
-        NinePatchDrawable downPatchDrawable = new NinePatchDrawable(downPatch);
-        NinePatch overPatch = new NinePatch(new Texture(Gdx.files.internal("sprite/uipack_fixed/PNG/blue_button" + "11.png")),10,10,10,10);
-        NinePatchDrawable overPatchDrawable = new NinePatchDrawable(overPatch);
-
-        TextButton.TextButtonStyle mainMenuBtnStyle = new TextButton.TextButtonStyle();
-        mainMenuBtnStyle.up = upPatchDrawable;
-        mainMenuBtnStyle.down = downPatchDrawable;
-        mainMenuBtnStyle.over = overPatchDrawable;
-        mainMenuBtnStyle.font =  game.normalFont1;
-
-        spawnBtn = new TextButton("R", mainMenuBtnStyle);
-        spawnBtn.setWidth((new GlyphLayout(game.normalFont1, "12345")).width);
-        spawnBtn.setHeight(game.normalFont1.getLineHeight()*2f);
-        spawnBtn.setPosition(input_Y.getX() + input_Y.getWidth(), background.getY()-input_Type.getHeight()*1.1f);
-        stage.addActor(spawnBtn);
-        spawnBtn.addListener(new InputListener(){
-
-            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-                return true;
-            }
-
-            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-                rotateBlock(true);
-            }
-
-        });
-
-        lockBtn = new TextButton("L", mainMenuBtnStyle);
-        lockBtn.setWidth((new GlyphLayout(game.normalFont1, "12345")).width);
-        lockBtn.setHeight(game.normalFont1.getLineHeight()*2f);
-        lockBtn.setPosition(spawnBtn.getX() + spawnBtn.getWidth(), background.getY()-input_Type.getHeight()*1.1f);
-        stage.addActor(lockBtn);
-        lockBtn.addListener(new InputListener(){
-
-            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-                return true;
-            }
-
-            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-                lockTetromino();
-            }
-
-        });
-
-
-        stage.addActor(input_Type);
-        stage.addActor(input_Rotation);
-        stage.addActor(input_X);
-        stage.addActor(input_Y);
+        initializeScene();
+        initializeDevelopScene();
     }
 
     @Override
@@ -235,21 +150,21 @@ public class GameScreen implements Screen {
         Gdx.gl.glClearColor(0.1f, 0.1f, 0.1f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-
         //TICK
         timer += delta;
+        rotateTimer +=delta;
         if(timer >= 1) {
             timer = 0.0f;
 
-            //DROP CURRENT BLOCK or MAKE NEW BLOCK
-            if(hasActiveTetromino) {
-                dropBlockSoft();
+            if(isGameOver){
+
+            } else if(hasActiveTetromino) { //DROP CURRENT BLOCK or MAKE NEW BLOCK if not game over yet
+                naturalDrop();
             } else {
                 spawnBlockTEMP();
             }
 
             //VALIDATE LOCK CONDITION
-
 
         }
 
@@ -287,21 +202,60 @@ public class GameScreen implements Screen {
         stage.dispose();
     }
 
+
+
     private void spawnBlock(Integer type, Integer rotation, Texture texture, Integer spawnCol, Integer spawnRow){
-        if(hasActiveTetromino){
+        if(hasActiveTetromino || isGameOver){
             return;
         }
-        for(Integer pieceIteration = 0; pieceIteration < 4; pieceIteration++){
+
+        //Validate Gameover
+        for(Integer i = 0; i < 4; i++) {
             Image tetromino = new Image(texture);
-            tetromino.setSize(varColWidth, varRowHeight);
-            tetromino.setX(coordCol[spawnCol + PATTERN_TETROMINOES[type][rotation][pieceIteration][0]]);
-            tetromino.setY(coordRow[spawnRow + PATTERN_TETROMINOES[type][rotation][pieceIteration][1]]);
-            activeTetromino [pieceIteration] = tetromino;
-            stage.addActor(activeTetromino[pieceIteration]);
+
+
+
+            Integer col = spawnCol + PATTERN_TETROMINOES[type][rotation][i][0];
+            Integer row = spawnRow + PATTERN_TETROMINOES[type][rotation][i][1];
+
+            //VALIDATE if the spawning slot already has a block
+            if (gameBoard[col][row] != null) {
+                isGameOver = true;
+                Gdx.app.log("Debug:", "Game Over");
+                break;
+            }
         }
+
+        if(isGameOver){
+            return;
+        }
+
+        for(Integer i = 0; i < 4; i++){
+            Image tetromino = new Image(texture);
+            Integer col = spawnCol + PATTERN_TETROMINOES[type][rotation][i][0];
+            Integer row = spawnRow + PATTERN_TETROMINOES[type][rotation][i][1];
+
+
+            activeTetromino[i][0] = col;
+            activeTetromino[i][1] = row;
+
+            tetromino.setSize(varColWidth, varRowHeight);
+
+            tetromino.setX(coordCol[col]);
+            tetromino.setY(coordRow[row]);
+
+            gameBoard[col][row] = tetromino;
+
+            stage.addActor( gameBoard[col][row]);
+        }
+
         activeType = type;
         activeRotation = rotation;
         hasActiveTetromino = true;
+
+        Random random = new Random();
+        nextSpawnType = random.nextInt(7) + 1;
+        input_Type.setText(nextSpawnType+"");
     }
 
     private void spawnBlockTEMP(){
@@ -312,20 +266,90 @@ public class GameScreen implements Screen {
                 Integer.parseInt(input_Y.getText()));
     }
 
-    private void dropBlockSoft(){
+    private Image getActiveTetrominoImage(Integer pieceIteration) {
+        return gameBoard[activeTetromino[pieceIteration][0]][activeTetromino[pieceIteration][1]];
+    }
+
+    private void naturalDrop(){
         if(!hasActiveTetromino){
             return;
         }
-        for(Image block : activeTetromino){
-            block.setPosition(block.getX(), block.getY()-varRowHeight);
+
+        //Validate Drop
+        //Logic:
+        //For every single block in the tetromino, check if there is a block below
+            //Don't have, it pass and remain the canDrop flag as it is
+            //Have, Match that block against all 4 blocks of the active one
+                    //Does not match any of the 4, flag canDrop as false
+                    //Matched any piece in the 4 and it pass, remain the canDrop flag as it is
+        Boolean canDrop = true;
+        for(Integer i = 0; i < 4; i ++){
+
+            //If already at bottom row, cant drop;
+            if(activeTetromino[i][1]-1 < 0){
+                canDrop = false;
+                break;
+            }
+            Image blockBelow = gameBoard[activeTetromino[i][0]][activeTetromino[i][1]-1];
+            if(blockBelow != null){
+                Boolean isOwnBlock = false;
+                for(Integer i2 = 0; i2 < 4; i2 ++) {
+                    if((activeTetromino[i][0]) == (activeTetromino[i2][0]) &&
+                            (activeTetromino[i][1]-1) == (activeTetromino[i2][1])){
+                        isOwnBlock = true;
+                    }
+                }
+                if(!isOwnBlock) {
+                    canDrop = false;
+                    break;
+                }
+            } else {
+                canDrop = true;
+            }
+            if(!canDrop){
+                break;
+            }
         }
+
+
+        if(canDrop){
+            Image[] holder = new Image[4];
+            for(Integer i = 0; i < 4; i ++){
+                holder[i] = getActiveTetrominoImage(i);
+
+//                holder[i].setPosition(holder[i].getX(), coordRow[activeTetromino[i][1] - 1 + PATTERN_TETROMINOES[activeType][activeRotation][i][1]]);
+                holder[i].setPosition(holder[i].getX(), coordRow[activeTetromino[i][1] - 1]);
+                gameBoard[activeTetromino[i][0]][activeTetromino[i][1]] = null;
+
+            }
+
+            for (Integer i = 0; i < 4; i ++){
+
+                gameBoard[activeTetromino[i][0]][activeTetromino[i][1]-1] = holder[i];
+                activeTetromino[i][1] --;
+            }
+        } else {
+            lockTetromino();
+        }
+
+    }
+
+    private void dropBlockHard(){
+        do{
+            naturalDrop();
+        } while(hasActiveTetromino);
+    }
+
+    private void dropBlockSoft(){
+
     }
 
     private void rotateBlock(boolean clockwise){
         if(!hasActiveTetromino){
             return;
         }
-        Integer[][] currentPattern = PATTERN_TETROMINOES[activeType][activeRotation];
+
+        //Reset rotation integer if it gets out of bound
         Integer nextRotation = activeRotation;
         if(clockwise){
             nextRotation ++;
@@ -339,26 +363,250 @@ public class GameScreen implements Screen {
             }
         }
 
-        Integer[][] nextPattern = PATTERN_TETROMINOES[activeType][nextRotation];
+        //Patterns
+        Integer[][] currentPattern, nextPattern;
+        currentPattern = PATTERN_TETROMINOES[activeType][activeRotation];
+        nextPattern = PATTERN_TETROMINOES[activeType][nextRotation];
 
-        for(Integer pieceIteration = 0; pieceIteration <= 3; pieceIteration ++){
-            activeTetromino[pieceIteration].setPosition(
-                    activeTetromino[pieceIteration].getX()+(nextPattern[pieceIteration][0] - currentPattern[pieceIteration][0])*varColWidth,
-                    activeTetromino[pieceIteration].getY()+(nextPattern[pieceIteration][1] - currentPattern[pieceIteration][1])*varRowHeight);
 
-            Gdx.app.log("X" + pieceIteration, activeTetromino[pieceIteration].getX()+(nextPattern[pieceIteration][0] - currentPattern[pieceIteration][0])*varColWidth + "");
-            Gdx.app.log("Y" + pieceIteration, activeTetromino[pieceIteration].getY()+(nextPattern[pieceIteration][1] - currentPattern[pieceIteration][1])*varRowHeight + "");
+
+        Image [] holder = new Image[4]; //temp holder for the images
+        Integer [] xOffsetHolder = new Integer[4]; //temp holder for the x grid offset, so no need calculate again when updating gameBoard and activetetromino
+        Integer [] yOffsetHolder = new Integer[4]; //same as ^^ but fot y grid offset
+
+        //Backup tetromino reference
+        //Calculate Offset
+        for(Integer i = 0; i < 4; i ++) {
+            holder[i] = getActiveTetrominoImage(i); //Saving reference into temp holder, as it will be removed from gameBoard
+            xOffsetHolder[i] = nextPattern[i][0] - currentPattern[i][0]; //Calculate offset in x
+            yOffsetHolder[i] = nextPattern[i][1] - currentPattern[i][1]; //Calculate offset in y
+        }
+
+
+        Boolean canRotate = true;
+        Integer xOffsetToRotate = 0, yOffsetToRotate = 0; //How much does the piece need to be adjusted AFTER rotation
+
+        for(Integer i = 0; i < 4; i ++) {
+            Integer newX, newY;
+            newX = activeTetromino[i][0] + xOffsetHolder[i];
+            newY = activeTetromino[i][1] + yOffsetHolder[i];
+
+            //Check If out of bound
+            //Out of bound alone should never deny a rotate
+            if(newX < 0){
+                xOffsetToRotate = newX*(-1);
+            } else if(newX > 9){
+                xOffsetToRotate += newX - 9;
+            }
+
+            if(newY < 0){
+                yOffsetToRotate = newY*(-1);
+            } else if(newY > 19){
+                yOffsetToRotate += newY - 19;
+            }
+
+            //Check collision based on post-oob-check coordinate
+            newX += xOffsetToRotate;
+            newY += yOffsetToRotate;
+            //Check If Collide into other pieces
+            Image targetBlock = gameBoard[newX][newY];
+            if(targetBlock != null){
+                Boolean isOwnBlock = false;
+                for(Integer i2 = 0; i2 < 4; i2 ++) {
+                    if(newX == (activeTetromino[i2][0]) && newY == (activeTetromino[i2][1])){
+                        isOwnBlock = true;
+                    }
+                }
+                if(!isOwnBlock) {
+                    canRotate = false;
+                    break;
+                }
+            }
+            if(!canRotate){
+                break;
+            }
+        }
+
+        if(!canRotate){
+            return;
+        }
+
+
+        //Move image to new position
+        //Remove old location in gameBoard
+        for(Integer i = 0; i < 4; i ++){
+            holder[i].setPosition( //Setting position
+                    holder[i].getX()+xOffsetHolder[i]*varColWidth, //calculate difference for x gird, then multiply by the grid size
+                    holder[i].getY()+yOffsetHolder[i]*varRowHeight); //calculate difference for y gird, then multiply by the grid size
+
+            gameBoard[activeTetromino[i][0]][activeTetromino[i][1]] = null; //removing the reference in the old gameBoard slot
+        }
+
+        //Update gameBoard and activeTetromino
+        //Necessary to do in seperate loop because, if a tetromino has a block above/below each other, moving the upper
+        //one down will overwrite the lower one, and its lost.
+        for(Integer i = 0; i <= 3; i ++){
+            gameBoard[activeTetromino[i][0]+xOffsetHolder[i]][activeTetromino[i][1]+yOffsetHolder[i]] = holder[i];
+            activeTetromino[i][0] += xOffsetHolder[i];
+            activeTetromino[i][1] += yOffsetHolder[i];
         }
 
         activeRotation = nextRotation;
+        rotateTimer = 0.0f;
     }
 
     private void lockTetromino(){
-        activeTetromino = new Image[4];
+        Gdx.app.log("Debug", rotateTimer + "");
+        if(rotateTimer < 1.0f){
+            return;
+        }
+        activeTetromino = new Integer[][]{
+                {0,0},{0,0},{0,0},{0,0}
+        };
         hasActiveTetromino = false;
+        Gdx.app.log("Debug:","LOCK!");
     }
 
-    private void initializeParameters(){
+    private void initializeDevelopScene(){
+        NinePatch btnPatch = new NinePatch(new Texture(Gdx.files.internal("sprite/uipack_fixed/PNG/grey_button06.png")),10,10,10,10);
+
+        inputStyle_Type = new TextField.TextFieldStyle(game.normalFont1, Color.BLACK,
+                new Image(new Texture(Gdx.files.internal("sprite/uipack_fixed/PNG/blue_tick.png"))).getDrawable(),
+                new Image(new Texture(Gdx.files.internal("sprite/puzzlepack/png/selectorA.png"))).getDrawable(),
+                new NinePatchDrawable(btnPatch));
+
+        input_Type = new TextField("1", inputStyle_Type);
+        input_Type.setHeight(game.normalFont1.getLineHeight()*2f);
+        input_Type.setPosition(background.getX(), background.getY()-input_Type.getHeight()*1.1f);
+        input_Type.setMaxLength(1);
+        input_Type.setWidth((new GlyphLayout(game.normalFont1, "555")).width);
+
+        input_Rotation = new TextField("1", inputStyle_Type);
+        input_Rotation.setHeight(game.normalFont1.getLineHeight()*2f);
+        input_Rotation.setPosition(input_Type.getX() + input_Type.getWidth(), background.getY()-input_Type.getHeight()*1.1f);
+        input_Rotation.setMaxLength(1);
+        input_Rotation.setWidth((new GlyphLayout(game.normalFont1, "555")).width);
+
+        input_X = new TextField(nextSpawnX+"", inputStyle_Type);
+        input_X.setHeight(game.normalFont1.getLineHeight()*2f);
+        input_X.setPosition(input_Rotation.getX() + input_Rotation.getWidth(), background.getY()-input_Type.getHeight()*1.1f);
+        input_X.setMaxLength(2);
+        input_X.setWidth((new GlyphLayout(game.normalFont1, "1234")).width);
+
+        input_Y = new TextField(nextSpawnY+"", inputStyle_Type);
+        input_Y.setHeight(game.normalFont1.getLineHeight()*2f);
+        input_Y.setPosition(input_X.getX() + input_X.getWidth(), background.getY()-input_Type.getHeight()*1.1f);
+        input_Y.setMaxLength(2);
+        input_Y.setWidth((new GlyphLayout(game.normalFont1, "1234")).width);
+
+
+        NinePatch upPatch = new NinePatch(new Texture(Gdx.files.internal("sprite/uipack_fixed/PNG/blue_button" + "09.png")),10,10,10,10);
+        NinePatchDrawable upPatchDrawable = new NinePatchDrawable(upPatch);
+        NinePatch downPatch = new NinePatch(new Texture(Gdx.files.internal("sprite/uipack_fixed/PNG/blue_button" + "10.png")),10,10,10,10);
+        NinePatchDrawable downPatchDrawable = new NinePatchDrawable(downPatch);
+        NinePatch overPatch = new NinePatch(new Texture(Gdx.files.internal("sprite/uipack_fixed/PNG/blue_button" + "11.png")),10,10,10,10);
+        NinePatchDrawable overPatchDrawable = new NinePatchDrawable(overPatch);
+
+        TextButton.TextButtonStyle mainMenuBtnStyle = new TextButton.TextButtonStyle();
+        mainMenuBtnStyle.up = upPatchDrawable;
+        mainMenuBtnStyle.down = downPatchDrawable;
+        mainMenuBtnStyle.over = overPatchDrawable;
+        mainMenuBtnStyle.font =  game.normalFont1;
+
+        rotateRBtn = new TextButton("R", mainMenuBtnStyle);
+        rotateRBtn.setWidth((new GlyphLayout(game.normalFont1, "123")).width);
+        rotateRBtn.setHeight(game.normalFont1.getLineHeight()*2f);
+        rotateRBtn.setPosition(input_Y.getX() + input_Y.getWidth(), background.getY()-input_Type.getHeight()*1.1f);
+        stage.addActor(rotateRBtn);
+        rotateRBtn.addListener(new InputListener(){
+
+            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+                Gdx.app.log("Input", "Game Screen : Rotate button pressed");
+                return true;
+            }
+
+            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
+                rotateBlock(true);
+            }
+
+        });
+
+        lockBtn = new TextButton("L", mainMenuBtnStyle);
+        lockBtn.setWidth((new GlyphLayout(game.normalFont1, "123")).width);
+        lockBtn.setHeight(game.normalFont1.getLineHeight()*2f);
+        lockBtn.setPosition(rotateRBtn.getX() + rotateRBtn.getWidth(), background.getY()-input_Type.getHeight()*1.1f);
+        stage.addActor(lockBtn);
+        lockBtn.addListener(new InputListener(){
+
+            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+                Gdx.app.log("Input", "Game Screen : Lock button pressed");
+                return true;
+            }
+
+            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
+                lockTetromino();
+            }
+
+        });
+
+        resetBtn = new TextButton("Rs", mainMenuBtnStyle);
+        resetBtn.setWidth((new GlyphLayout(game.normalFont1, "123")).width);
+        resetBtn.setHeight(game.normalFont1.getLineHeight()*2f);
+        resetBtn.setPosition(lockBtn.getX() + lockBtn.getWidth(), background.getY()-input_Type.getHeight()*1.1f);
+        stage.addActor(resetBtn);
+        resetBtn.addListener(new InputListener(){
+
+            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+                Gdx.app.log("Input", "Game Screen : Reset button pressed");
+                return true;
+            }
+
+            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
+                resetGame();
+            }
+
+        });
+
+        dropBtn = new TextButton("D", mainMenuBtnStyle);
+        dropBtn.setWidth((new GlyphLayout(game.normalFont1, "123")).width);
+        dropBtn.setHeight(game.normalFont1.getLineHeight()*2f);
+        dropBtn.setPosition(resetBtn.getX() + resetBtn.getWidth(), background.getY()-input_Type.getHeight()*1.1f);
+        stage.addActor(dropBtn);
+        dropBtn.addListener(new InputListener(){
+
+            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+                Gdx.app.log("Input", "Game Screen : Drop button pressed");
+                return true;
+            }
+
+            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
+                dropBlockHard();
+            }
+
+        });
+
+
+
+        stage.addActor(input_Type);
+        stage.addActor(input_Rotation);
+        stage.addActor(input_X);
+        stage.addActor(input_Y);
+    }
+
+    private void initializeScene(){
+
+        //STAGE
+        stage = new Stage(new ScreenViewport(), game.spritebatch);
+        Gdx.input.setInputProcessor(stage);
+
+        //BACKGROUND
+        NinePatch bgPatch = new NinePatch(new Texture(Gdx.files.internal("sprite/uipack_fixed/PNG/grey_panel.png")),10,10,10,10);
+        background = new Image(new NinePatchDrawable(bgPatch));
+        background.setHeight(game.DISPLAY_HEIGHT/10*9);
+        background.setWidth(background.getHeight()/15*8);
+        background.setPosition((game.DISPLAY_WIDTH/2) - (background.getWidth()/2), game.DISPLAY_HEIGHT/2 - background.getHeight()/2);
+        stage.addActor(background);
+
         //ROW PREPERATION
         coordRow = new Float[20];
         Float startRow = background.getY() + background.getHeight()*0.01f;
@@ -376,6 +624,26 @@ public class GameScreen implements Screen {
             coordCol[i] = startCol;
             startCol += varColWidth;
         }
+
+        //GAMEBOARD
+        for(Integer i = 0; i < 10; i ++){
+            for(Integer z = 0; z < 20; z ++){
+                gameBoard[i][z] = null;
+            }
+        }
+
+        timer = 0.0f;
+        rotateTimer = 0.0f;
+    }
+
+    private void resetGame(){
+        stage.dispose();
+        initializeScene();
+        initializeDevelopScene();
+        activeTetromino = new Integer[][]{{0,0},{0,0},{0,0},{0,0}};
+        gameBoard = new Image[10][20];
+        hasActiveTetromino = false;
+        isGameOver = false;
     }
 
 }

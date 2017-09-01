@@ -77,7 +77,7 @@ public class MainMenuScreen implements Screen {
         startBtn.addListener(new InputListener(){
 
             public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-                Gdx.app.log("DEBUG", "Start new game");
+                Gdx.app.log("Input", "Main menu : Start button pressed");
                 return true;
             }
 
@@ -97,7 +97,7 @@ public class MainMenuScreen implements Screen {
         settingBtn.addListener(new InputListener(){
 
             public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-                Gdx.app.log("DEBUG", "Setting");
+                Gdx.app.log("Input", "Main menu : Setting button pressed");
                 return true;
             }
 
@@ -117,7 +117,7 @@ public class MainMenuScreen implements Screen {
         exitBtn.addListener(new InputListener(){
 
             public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-                Gdx.app.log("DEBUG", "Exit");
+                Gdx.app.log("Input", "Main menu : Exit button pressed");
                 return true;
             }
 
