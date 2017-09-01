@@ -34,7 +34,10 @@ The game is pretty simple and i am not going to add any crazy flavor to it, rath
 * Load time on start up has drastically increased, maybe because of all the excess textures in the assets folder
 ### 2017-09-02 05:43
 * Focusing on tetris core game now, game is still controlled by temp on screen control instead of key input.
+### 2017-09-02 07:40
+* Bug fixes and more core game functions
 
 # Credits:
 * Various Free UI Packs and Fonts by [Kenney.nl](www.kenney.nl)
 * [8 Bit Wonder Font by Joiro Hatagaya](http://www.dafont.com/8bit-wonder.font)
+* [libGDX](https://libgdx.badlogicgames.com/) by badlogicgames
