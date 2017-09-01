@@ -32,7 +32,8 @@ The game is pretty simple and i am not going to add any crazy flavor to it, rath
 * Element scaling and positioning was inconsistent for different platforms, tried to improve it, looks okay now, not fully tested yet.
 * Need to do a full disposal() check in case for memory leak
 * Load time on start up has drastically increased, maybe because of all the excess textures in the assets folder
-
+### 2017-09-02 05:43
+* Focusing on tetris core game now, game is still controlled by temp on screen control instead of key input.
 
 # Credits:
 * Various Free UI Packs and Fonts by [Kenney.nl](www.kenney.nl)

@@ -34,7 +34,7 @@ public class GameScreen implements Screen {
             new Texture(Gdx.files.internal("sprite/puzzle-pack-ii/PNG/Tiles yellow/tileYellow_27.png"))};
 
     //ROTATION : [Block Type 7][Rotation Number 4][Piece Number 4][X/Y 2]
-    private static final Integer [][][][] PATTERN_TETROMINOES = new Integer [][][][]{
+    private static final int [][][][] PATTERN_TETROMINOES = new int [][][][]{
             //TYPE 1 - I
             {
                     //ROTATION 1
@@ -125,10 +125,10 @@ public class GameScreen implements Screen {
     //Exact coordinates for each grid
     private Float[] coordRow, coordCol;
     //Holds gameBoard array idex for current active tetromino
-    private Integer [][] activeTetromino = new Integer[][]{{0,0},{0,0},{0,0},{0,0}};
+    private int [][] activeTetromino = new int[][]{{0,0},{0,0},{0,0},{0,0}};
     //Holds characteristics for active tetromino
-    private Integer activeType, activeRotation;
-    private Integer nextSpawnType, nextSpawnX = 4, nextSpawnY = 18;
+    private int activeType, activeRotation;
+    private int nextSpawnType, nextSpawnX = 4, nextSpawnY = 18;
     //Holds image/actor for all tetrominoes on the board
     private Image [][] gameBoard = new Image[10][20];
 
@@ -159,15 +159,13 @@ public class GameScreen implements Screen {
             if(isGameOver){
 
             } else if(hasActiveTetromino) { //DROP CURRENT BLOCK or MAKE NEW BLOCK if not game over yet
-                naturalDrop();
+                if(dropTetrominoNatural()){
+                    lockTetromino(false);
+                };
             } else {
-                spawnBlockTEMP();
+                spawnTetrominoTemp();
             }
-
-            //VALIDATE LOCK CONDITION
-
         }
-
         stage.act(delta);
         stage.draw();
     }
@@ -204,19 +202,19 @@ public class GameScreen implements Screen {
 
 
 
-    private void spawnBlock(Integer type, Integer rotation, Texture texture, Integer spawnCol, Integer spawnRow){
+    private void spawnTetromino(int type, int rotation, Texture texture, int spawnCol, int spawnRow){
         if(hasActiveTetromino || isGameOver){
             return;
         }
 
         //Validate Gameover
-        for(Integer i = 0; i < 4; i++) {
+        for(int i = 0; i < 4; i++) {
             Image tetromino = new Image(texture);
 
 
 
-            Integer col = spawnCol + PATTERN_TETROMINOES[type][rotation][i][0];
-            Integer row = spawnRow + PATTERN_TETROMINOES[type][rotation][i][1];
+            int col = spawnCol + PATTERN_TETROMINOES[type][rotation][i][0];
+            int row = spawnRow + PATTERN_TETROMINOES[type][rotation][i][1];
 
             //VALIDATE if the spawning slot already has a block
             if (gameBoard[col][row] != null) {
@@ -230,10 +228,10 @@ public class GameScreen implements Screen {
             return;
         }
 
-        for(Integer i = 0; i < 4; i++){
+        for(int i = 0; i < 4; i++){
             Image tetromino = new Image(texture);
-            Integer col = spawnCol + PATTERN_TETROMINOES[type][rotation][i][0];
-            Integer row = spawnRow + PATTERN_TETROMINOES[type][rotation][i][1];
+            int col = spawnCol + PATTERN_TETROMINOES[type][rotation][i][0];
+            int row = spawnRow + PATTERN_TETROMINOES[type][rotation][i][1];
 
 
             activeTetromino[i][0] = col;
@@ -258,21 +256,22 @@ public class GameScreen implements Screen {
         input_Type.setText(nextSpawnType+"");
     }
 
-    private void spawnBlockTEMP(){
-        spawnBlock(Integer.parseInt(input_Type.getText())-1,
+    private void spawnTetrominoTemp(){
+        spawnTetromino(Integer.parseInt(input_Type.getText())-1,
                 Integer.parseInt(input_Rotation.getText())-1,
                 TEXTURE_TETROMINOES[Integer.parseInt(input_Type.getText())-1],
                 Integer.parseInt(input_X.getText()),
                 Integer.parseInt(input_Y.getText()));
     }
 
-    private Image getActiveTetrominoImage(Integer pieceIteration) {
+    private Image getActiveTetrominoImage(int pieceIteration) {
         return gameBoard[activeTetromino[pieceIteration][0]][activeTetromino[pieceIteration][1]];
     }
 
-    private void naturalDrop(){
-        if(!hasActiveTetromino){
-            return;
+    //return true if lockTetromino should be called after
+    private Boolean dropTetrominoNatural(){
+        if(!hasActiveTetromino || isGameOver){
+            return false;
         }
 
         //Validate Drop
@@ -283,7 +282,7 @@ public class GameScreen implements Screen {
                     //Does not match any of the 4, flag canDrop as false
                     //Matched any piece in the 4 and it pass, remain the canDrop flag as it is
         Boolean canDrop = true;
-        for(Integer i = 0; i < 4; i ++){
+        for(int i = 0; i < 4; i ++){
 
             //If already at bottom row, cant drop;
             if(activeTetromino[i][1]-1 < 0){
@@ -293,7 +292,7 @@ public class GameScreen implements Screen {
             Image blockBelow = gameBoard[activeTetromino[i][0]][activeTetromino[i][1]-1];
             if(blockBelow != null){
                 Boolean isOwnBlock = false;
-                for(Integer i2 = 0; i2 < 4; i2 ++) {
+                for(int i2 = 0; i2 < 4; i2 ++) {
                     if((activeTetromino[i][0]) == (activeTetromino[i2][0]) &&
                             (activeTetromino[i][1]-1) == (activeTetromino[i2][1])){
                         isOwnBlock = true;
@@ -314,43 +313,45 @@ public class GameScreen implements Screen {
 
         if(canDrop){
             Image[] holder = new Image[4];
-            for(Integer i = 0; i < 4; i ++){
+            for(int i = 0; i < 4; i ++){
                 holder[i] = getActiveTetrominoImage(i);
-
-//                holder[i].setPosition(holder[i].getX(), coordRow[activeTetromino[i][1] - 1 + PATTERN_TETROMINOES[activeType][activeRotation][i][1]]);
                 holder[i].setPosition(holder[i].getX(), coordRow[activeTetromino[i][1] - 1]);
                 gameBoard[activeTetromino[i][0]][activeTetromino[i][1]] = null;
 
             }
 
-            for (Integer i = 0; i < 4; i ++){
+            for (int i = 0; i < 4; i ++){
 
                 gameBoard[activeTetromino[i][0]][activeTetromino[i][1]-1] = holder[i];
                 activeTetromino[i][1] --;
             }
+            return false;
         } else {
-            lockTetromino();
+            return true;
         }
 
     }
 
-    private void dropBlockHard(){
+    private void dropTetrominoHard(){
         do{
-            naturalDrop();
+            if(dropTetrominoNatural()){
+                lockTetromino(true);
+            };
         } while(hasActiveTetromino);
-    }
-
-    private void dropBlockSoft(){
 
     }
 
-    private void rotateBlock(boolean clockwise){
-        if(!hasActiveTetromino){
+    private void dropTetrominoSoft(){
+
+    }
+
+    private void rotateTetromino(boolean clockwise){
+        if(!hasActiveTetromino || isGameOver){
             return;
         }
 
         //Reset rotation integer if it gets out of bound
-        Integer nextRotation = activeRotation;
+        int nextRotation = activeRotation;
         if(clockwise){
             nextRotation ++;
             if (nextRotation > 3){
@@ -364,19 +365,19 @@ public class GameScreen implements Screen {
         }
 
         //Patterns
-        Integer[][] currentPattern, nextPattern;
+        int[][] currentPattern, nextPattern;
         currentPattern = PATTERN_TETROMINOES[activeType][activeRotation];
         nextPattern = PATTERN_TETROMINOES[activeType][nextRotation];
 
 
 
         Image [] holder = new Image[4]; //temp holder for the images
-        Integer [] xOffsetHolder = new Integer[4]; //temp holder for the x grid offset, so no need calculate again when updating gameBoard and activetetromino
-        Integer [] yOffsetHolder = new Integer[4]; //same as ^^ but fot y grid offset
+        int [] xOffsetHolder = new int[4]; //temp holder for the x grid offset, so no need calculate again when updating gameBoard and activetetromino
+        int [] yOffsetHolder = new int[4]; //same as ^^ but fot y grid offset
 
         //Backup tetromino reference
         //Calculate Offset
-        for(Integer i = 0; i < 4; i ++) {
+        for(int i = 0; i < 4; i ++) {
             holder[i] = getActiveTetrominoImage(i); //Saving reference into temp holder, as it will be removed from gameBoard
             xOffsetHolder[i] = nextPattern[i][0] - currentPattern[i][0]; //Calculate offset in x
             yOffsetHolder[i] = nextPattern[i][1] - currentPattern[i][1]; //Calculate offset in y
@@ -384,10 +385,10 @@ public class GameScreen implements Screen {
 
 
         Boolean canRotate = true;
-        Integer xOffsetToRotate = 0, yOffsetToRotate = 0; //How much does the piece need to be adjusted AFTER rotation
+        int xOffsetToRotate = 0, yOffsetToRotate = 0; //How much does the piece need to be adjusted AFTER rotation
 
-        for(Integer i = 0; i < 4; i ++) {
-            Integer newX, newY;
+        for(int i = 0; i < 4; i ++) {
+            int newX, newY;
             newX = activeTetromino[i][0] + xOffsetHolder[i];
             newY = activeTetromino[i][1] + yOffsetHolder[i];
 
@@ -396,13 +397,13 @@ public class GameScreen implements Screen {
             if(newX < 0){
                 xOffsetToRotate = newX*(-1);
             } else if(newX > 9){
-                xOffsetToRotate += newX - 9;
+                xOffsetToRotate = newX - 9;
             }
 
             if(newY < 0){
                 yOffsetToRotate = newY*(-1);
             } else if(newY > 19){
-                yOffsetToRotate += newY - 19;
+                yOffsetToRotate = newY - 19;
             }
 
             //Check collision based on post-oob-check coordinate
@@ -412,7 +413,7 @@ public class GameScreen implements Screen {
             Image targetBlock = gameBoard[newX][newY];
             if(targetBlock != null){
                 Boolean isOwnBlock = false;
-                for(Integer i2 = 0; i2 < 4; i2 ++) {
+                for(int i2 = 0; i2 < 4; i2 ++) {
                     if(newX == (activeTetromino[i2][0]) && newY == (activeTetromino[i2][1])){
                         isOwnBlock = true;
                     }
@@ -434,7 +435,7 @@ public class GameScreen implements Screen {
 
         //Move image to new position
         //Remove old location in gameBoard
-        for(Integer i = 0; i < 4; i ++){
+        for(int i = 0; i < 4; i ++){
             holder[i].setPosition( //Setting position
                     holder[i].getX()+xOffsetHolder[i]*varColWidth, //calculate difference for x gird, then multiply by the grid size
                     holder[i].getY()+yOffsetHolder[i]*varRowHeight); //calculate difference for y gird, then multiply by the grid size
@@ -445,7 +446,7 @@ public class GameScreen implements Screen {
         //Update gameBoard and activeTetromino
         //Necessary to do in seperate loop because, if a tetromino has a block above/below each other, moving the upper
         //one down will overwrite the lower one, and its lost.
-        for(Integer i = 0; i <= 3; i ++){
+        for(int i = 0; i <= 3; i ++){
             gameBoard[activeTetromino[i][0]+xOffsetHolder[i]][activeTetromino[i][1]+yOffsetHolder[i]] = holder[i];
             activeTetromino[i][0] += xOffsetHolder[i];
             activeTetromino[i][1] += yOffsetHolder[i];
@@ -455,12 +456,95 @@ public class GameScreen implements Screen {
         rotateTimer = 0.0f;
     }
 
-    private void lockTetromino(){
-        Gdx.app.log("Debug", rotateTimer + "");
-        if(rotateTimer < 1.0f){
+    private void moveTetromino(Boolean left){
+        if(!hasActiveTetromino || isGameOver){
             return;
         }
-        activeTetromino = new Integer[][]{
+
+        Boolean canMove = true;
+
+        //OOB CHECK
+        if(left){
+            for(int i = 0; i < 4; i ++){
+                if(activeTetromino[i][0]<=0){
+                    canMove = false;
+                    break;
+                }
+            }
+        } else {
+            for(int i = 0; i < 4; i ++){
+                if(activeTetromino[i][0]>=9){
+                    canMove = false;
+                    break;
+                }
+            }
+        }
+
+        if(!canMove){
+            return;
+        }
+
+        //COLLISION CHECK
+        Image holder[] = new Image[4];
+        int nowX,nowY,newX;
+        int xOffset;
+        if(left){
+            xOffset = -1;
+        } else {
+            xOffset = 1;
+        }
+
+        for(int i = 0; i < 4; i ++){
+            holder[i] = getActiveTetrominoImage(i);
+            nowX = activeTetromino[i][0];
+            nowY = activeTetromino[i][1];
+            newX = nowX + xOffset;
+
+            Image targetBlock = gameBoard[newX][nowY];
+            //If destination is occupied
+            if(targetBlock!=null){
+                //verify if occupied slot belongs to active tetromino
+                boolean isOwnBlock = false;
+                for(int i2 = 0; i2 < 4; i2++){
+                    if(newX == activeTetromino[i2][0] && nowY == activeTetromino[i2][1]){
+                        isOwnBlock = true;
+                        break;
+                    }
+                }
+                if(!isOwnBlock){
+                    canMove = false;
+                    break;
+                }
+            }
+        }
+
+        if(canMove){
+            for(int i = 0; i < 4; i ++){
+                nowX = activeTetromino[i][0];
+                nowY = activeTetromino[i][1];
+                newX = nowX + xOffset;
+                holder[i].setPosition(coordCol[newX], holder[i].getY());
+                gameBoard[nowX][nowY] = null;
+            }
+            for (int i = 0; i < 4; i ++){
+                nowX = activeTetromino[i][0];
+                nowY = activeTetromino[i][1];
+                newX = nowX + xOffset;
+                gameBoard[newX][nowY] = holder[i];
+                activeTetromino[i][0] += xOffset;
+            }
+        }
+
+        //UPDATE gameBoard AND activeTetromino
+
+
+    }
+
+    private void lockTetromino(Boolean force){
+        if(rotateTimer < 1.0f && force == false){
+            return;
+        }
+        activeTetromino = new int[][]{
                 {0,0},{0,0},{0,0},{0,0}
         };
         hasActiveTetromino = false;
@@ -526,7 +610,7 @@ public class GameScreen implements Screen {
             }
 
             public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-                rotateBlock(true);
+                rotateTetromino(true);
             }
 
         });
@@ -544,7 +628,7 @@ public class GameScreen implements Screen {
             }
 
             public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-                lockTetromino();
+                lockTetromino(true);
             }
 
         });
@@ -580,7 +664,43 @@ public class GameScreen implements Screen {
             }
 
             public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-                dropBlockHard();
+                dropTetrominoHard();
+            }
+
+        });
+
+        leftBtn = new TextButton("l", mainMenuBtnStyle);
+        leftBtn.setWidth((new GlyphLayout(game.normalFont1, "123")).width);
+        leftBtn.setHeight(game.normalFont1.getLineHeight()*2f);
+        leftBtn.setPosition(dropBtn.getX() + dropBtn.getWidth(), background.getY()-input_Type.getHeight()*1.1f);
+        stage.addActor(leftBtn);
+        leftBtn.addListener(new InputListener(){
+
+            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+                Gdx.app.log("Input", "Game Screen : Left button pressed");
+                return true;
+            }
+
+            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
+                moveTetromino(true);
+            }
+
+        });
+
+        rightBtn = new TextButton("r", mainMenuBtnStyle);
+        rightBtn.setWidth((new GlyphLayout(game.normalFont1, "123")).width);
+        rightBtn.setHeight(game.normalFont1.getLineHeight()*2f);
+        rightBtn.setPosition(leftBtn.getX() + leftBtn.getWidth(), background.getY()-input_Type.getHeight()*1.1f);
+        stage.addActor(rightBtn);
+        rightBtn.addListener(new InputListener(){
+
+            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+                Gdx.app.log("Input", "Game Screen : Right button pressed");
+                return true;
+            }
+
+            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
+                moveTetromino(false);
             }
 
         });
@@ -611,7 +731,7 @@ public class GameScreen implements Screen {
         coordRow = new Float[20];
         Float startRow = background.getY() + background.getHeight()*0.01f;
         varRowHeight = (background.getHeight()-background.getHeight()*0.02f)/20;
-        for(Integer i = 0; i < 20; i ++){
+        for(int i = 0; i < 20; i ++){
             coordRow[i] = startRow;
             startRow += varRowHeight;
         }
@@ -620,15 +740,15 @@ public class GameScreen implements Screen {
         coordCol = new Float[10];
         Float startCol = (background.getX() + background.getWidth()*0.02f);
         varColWidth = (background.getWidth()-background.getWidth()*0.04f)/10;
-        for(Integer i = 0; i < 10; i ++){
+        for(int i = 0; i < 10; i ++){
             coordCol[i] = startCol;
             startCol += varColWidth;
         }
 
         //GAMEBOARD
-        for(Integer i = 0; i < 10; i ++){
-            for(Integer z = 0; z < 20; z ++){
-                gameBoard[i][z] = null;
+        for(int i = 0; i < 10; i ++){
+            for(int i2 = 0; i2 < 20; i2 ++){
+                gameBoard[i][i2] = null;
             }
         }
 
@@ -640,7 +760,7 @@ public class GameScreen implements Screen {
         stage.dispose();
         initializeScene();
         initializeDevelopScene();
-        activeTetromino = new Integer[][]{{0,0},{0,0},{0,0},{0,0}};
+        activeTetromino = new int[][]{{0,0},{0,0},{0,0},{0,0}};
         gameBoard = new Image[10][20];
         hasActiveTetromino = false;
         isGameOver = false;
