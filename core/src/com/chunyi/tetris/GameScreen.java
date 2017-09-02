@@ -115,9 +115,9 @@ public class GameScreen implements Screen {
     //TICK CONTROL VARIABLE
     private Float timer;
     private Float rotateTimer;
-    private Float keyRepeatTimer;
     private Float softDropTimer;
     private Float newPieceTimer;
+    private Float keyRepeatTimer;
 
     //DEVELOPING STAGE ELEMENTS
     private TextField input_Type, input_Rotation, input_X, input_Y;
@@ -364,10 +364,10 @@ public class GameScreen implements Screen {
 //        do{
 //            dropTetrominoNatural();
 //        } while(hasActiveTetromino);
-        if(softDropTimer > 0.2f) {
+        if(softDropTimer > 0.05f) {
 
             //Gdx.app.log("softdrop", softDropTimer + "");
-            softDropTimer -= 0.2f;
+            softDropTimer -= 0.05f;
             if(dropTetrominoNatural()){
                 lockTetromino(false);
             };
@@ -665,6 +665,7 @@ public class GameScreen implements Screen {
         hasActiveTetromino = false;
         newPieceTimer = 0.0f;
         //VALIDATE Line Clear
+        validateLineClear();
         Gdx.app.log("Debug:","LOCK!");
     }
 
@@ -891,14 +892,39 @@ public class GameScreen implements Screen {
 
         if (Gdx.input.isKeyJustPressed(Keys.LEFT) && hasActiveTetromino && !isGameOver) {
             //Gdx.app.log("Input - Keyboard : ", "Left arrow key");
+
             moveTetromino(true);
+            keyRepeatTimer = 0.0f;
             return;
+
         }
 
         if (Gdx.input.isKeyJustPressed(Keys.RIGHT) && hasActiveTetromino && !isGameOver) {
             //Gdx.app.log("Input - Keyboard : ", "Right arrow key");
+
             moveTetromino(false);
+            keyRepeatTimer = 0.0f;
             return;
+
+        }
+
+        if (Gdx.input.isKeyPressed(Keys.LEFT) && hasActiveTetromino && !isGameOver) {
+            //Gdx.app.log("Input - Keyboard : ", "Left arrow key");
+            if(keyRepeatTimer > 0.5f) {
+                moveTetromino(true);
+            }
+            return;
+
+        } else if (Gdx.input.isKeyPressed(Keys.RIGHT) && hasActiveTetromino && !isGameOver) {
+            //Gdx.app.log("Input - Keyboard : ", "Right arrow key");
+
+            if(keyRepeatTimer > 0.5f) {
+                moveTetromino(false);
+            }
+            return;
+
+        } else {
+            keyRepeatTimer = 0.0f;
         }
 
         if (Gdx.input.isKeyJustPressed(Keys.UP) && hasActiveTetromino && !isGameOver) {
@@ -968,6 +994,50 @@ public class GameScreen implements Screen {
 //                    accel.y = 0;
 //                }
 //           }
+    }
+
+    private void validateLineClear(){
+
+        boolean [] isLineCleared = new boolean [20];
+        int linesCleared = 0;
+        //CLEARING
+        for(int y = 0; y < 20; y ++){
+            boolean isLineFull = true;
+            for(int x = 0; x < 10; x ++){
+                if(gameBoard[x][y] == null){
+                    isLineFull = false;
+                    break;
+                }
+            }
+            if(isLineFull){
+                for(int x = 0; x < 10; x ++) {
+                    gameBoard[x][y].remove();
+                    gameBoard[x][y] = null;
+                }
+                isLineCleared[y] = true;
+            } else {
+                isLineCleared[y] = false;
+            }
+        }
+
+        //DROPPING
+        for(int y = 0; y < 20; y ++){
+            if(isLineCleared[y] || linesCleared > 0){
+                if(isLineCleared[y]){
+                    linesCleared ++;
+                } else {
+                    for(int x = 0; x < 10; x ++){
+                        if(gameBoard[x][y] != null){
+                            gameBoard[x][y].setY (coordRow[y-linesCleared]);
+                            gameBoard[x][y-linesCleared] = gameBoard[x][y];
+                            gameBoard[x][y] = null;
+                        }
+                    }
+                }
+
+            }
+        }
+
     }
 
 }
