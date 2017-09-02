@@ -118,6 +118,7 @@ public class GameScreen implements Screen {
     private Float softDropTimer;
     private Float newPieceTimer;
     private Float keyRepeatTimer;
+    private Float autoRepeatTimer;
 
     //DEVELOPING STAGE ELEMENTS
     private TextField input_Type, input_Rotation, input_X, input_Y;
@@ -162,8 +163,10 @@ public class GameScreen implements Screen {
         keyRepeatTimer += delta;
         softDropTimer += delta;
         newPieceTimer += delta;
+        autoRepeatTimer += delta;
 
         inputHandler();
+
 
         //60Tick
         if(timer >= 1f) {
@@ -364,10 +367,11 @@ public class GameScreen implements Screen {
 //        do{
 //            dropTetrominoNatural();
 //        } while(hasActiveTetromino);
-        if(softDropTimer > 0.05f) {
+
+        if(softDropTimer > 0.03f) {
 
             //Gdx.app.log("softdrop", softDropTimer + "");
-            softDropTimer -= 0.05f;
+            softDropTimer -= 0.03f;
             if(dropTetrominoNatural()){
                 lockTetromino(false);
             };
@@ -876,6 +880,7 @@ public class GameScreen implements Screen {
         keyRepeatTimer = 0.0f;
         softDropTimer = 0.0f;
         newPieceTimer = 0.0f;
+        autoRepeatTimer = 0.0f;
     }
 
     private void resetGame(){
@@ -895,7 +900,7 @@ public class GameScreen implements Screen {
 
             moveTetromino(true);
             keyRepeatTimer = 0.0f;
-            return;
+            //return;
 
         }
 
@@ -904,33 +909,36 @@ public class GameScreen implements Screen {
 
             moveTetromino(false);
             keyRepeatTimer = 0.0f;
-            return;
+            //return;
 
         }
 
         if (Gdx.input.isKeyPressed(Keys.LEFT) && hasActiveTetromino && !isGameOver) {
             //Gdx.app.log("Input - Keyboard : ", "Left arrow key");
-            if(keyRepeatTimer > 0.5f) {
+            if((keyRepeatTimer > 0.5f || isSoftDropping) && autoRepeatTimer > 0.03f)  {
+                autoRepeatTimer = 0.0f;
                 moveTetromino(true);
             }
-            return;
+            //return;
 
         } else if (Gdx.input.isKeyPressed(Keys.RIGHT) && hasActiveTetromino && !isGameOver) {
             //Gdx.app.log("Input - Keyboard : ", "Right arrow key");
 
-            if(keyRepeatTimer > 0.5f) {
+            if((keyRepeatTimer > 0.5f || isSoftDropping) && autoRepeatTimer > 0.03f)  {
+                autoRepeatTimer = 0.0f;
                 moveTetromino(false);
             }
-            return;
+            //return;
 
         } else {
+            autoRepeatTimer = 0.0f;
             keyRepeatTimer = 0.0f;
         }
 
         if (Gdx.input.isKeyJustPressed(Keys.UP) && hasActiveTetromino && !isGameOver) {
             //Gdx.app.log("Input - Keyboard : ", "Up arrow key");
             rotateTetromino(true);
-            return;
+            //return;
         }
 
         if (Gdx.input.isKeyPressed(Keys.DOWN) && hasActiveTetromino && !isGameOver) {
@@ -940,7 +948,7 @@ public class GameScreen implements Screen {
                 isSoftDropping = true;
             }
             dropTetrominoSoft();
-            return;
+            //return;
         } else{
             isSoftDropping = false;
         }
@@ -949,7 +957,7 @@ public class GameScreen implements Screen {
         if (Gdx.input.isKeyJustPressed(Keys.SPACE) && hasActiveTetromino && !isGameOver) {
             //Gdx.app.log("Input - Keyboard : ", "Space bar key");
             dropTetrominoHard();
-            return;
+            //return;
         }
 
 //        boolean touch0 = Gdx.input.isTouched(0);
