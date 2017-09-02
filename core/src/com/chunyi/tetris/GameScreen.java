@@ -1,6 +1,8 @@
 package com.chunyi.tetris;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
+import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -113,6 +115,7 @@ public class GameScreen implements Screen {
     //TICK CONTROL VARIABLE
     private Float timer;
     private Float rotateTimer;
+    private Float keyRepeatTimer;
 
     //DEVELOPING STAGE ELEMENTS
     private TextField input_Type, input_Rotation, input_X, input_Y;
@@ -153,6 +156,9 @@ public class GameScreen implements Screen {
         //TICK
         timer += delta;
         rotateTimer +=delta;
+        keyRepeatTimer += delta;
+
+        inputHandler();
         if(timer >= 1) {
             timer = 0.0f;
 
@@ -548,8 +554,11 @@ public class GameScreen implements Screen {
                 {0,0},{0,0},{0,0},{0,0}
         };
         hasActiveTetromino = false;
+
+        //VALIDATE Line Clear
         Gdx.app.log("Debug:","LOCK!");
     }
+
 
     private void initializeDevelopScene(){
         NinePatch btnPatch = new NinePatch(new Texture(Gdx.files.internal("sprite/uipack_fixed/PNG/grey_button06.png")),10,10,10,10);
@@ -610,7 +619,7 @@ public class GameScreen implements Screen {
             }
 
             public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-                rotateTetromino(true);
+                //rotateTetromino(true);
             }
 
         });
@@ -664,7 +673,7 @@ public class GameScreen implements Screen {
             }
 
             public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-                dropTetrominoHard();
+                //dropTetrominoHard();
             }
 
         });
@@ -682,7 +691,7 @@ public class GameScreen implements Screen {
             }
 
             public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-                moveTetromino(true);
+                //moveTetromino(true);
             }
 
         });
@@ -700,7 +709,7 @@ public class GameScreen implements Screen {
             }
 
             public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-                moveTetromino(false);
+                //moveTetromino(false);
             }
 
         });
@@ -754,6 +763,7 @@ public class GameScreen implements Screen {
 
         timer = 0.0f;
         rotateTimer = 0.0f;
+        keyRepeatTimer = 0.0f;
     }
 
     private void resetGame(){
@@ -764,6 +774,76 @@ public class GameScreen implements Screen {
         gameBoard = new Image[10][20];
         hasActiveTetromino = false;
         isGameOver = false;
+    }
+
+    private void inputHandler() {
+
+        if ((Gdx.input.isKeyJustPressed(Keys.LEFT) || leftBtn.isPressed()) && hasActiveTetromino && !isGameOver) {
+            Gdx.app.log("Input - Keyboard : ", "Left arrow key");
+            moveTetromino(true);
+            return;
+        }
+
+        if ((Gdx.input.isKeyJustPressed(Keys.RIGHT) || rightBtn.isPressed()) && hasActiveTetromino && !isGameOver) {
+            Gdx.app.log("Input - Keyboard : ", "Right arrow key");
+            moveTetromino(false);
+            return;
+        }
+
+        if ((Gdx.input.isKeyJustPressed(Keys.UP) || rotateRBtn.isPressed()) && hasActiveTetromino && !isGameOver) {
+            Gdx.app.log("Input - Keyboard : ", "Up arrow key");
+            rotateTetromino(true);
+            return;
+        }
+
+        if ((Gdx.input.isKeyJustPressed(Keys.SPACE) || dropBtn.isPressed()) && hasActiveTetromino && !isGameOver) {
+            Gdx.app.log("Input - Keyboard : ", "Space bar key");
+            dropTetrominoHard();
+            return;
+        }
+
+//        boolean touch0 = Gdx.input.isTouched(0);
+//        boolean touch1 = Gdx.input.isTouched(1);
+//        boolean right = (touch0 && (x0 > 80 && x0 < 128)) || (touch1 && (x1 > 80 && x1 < 128));
+//        boolean down = (touch0 && (y0 < 60)) || (touch1 && (y1 < 60));
+//        boolean up = (touch0 && (y0 > 80 && x0 < 128)) || (touch1 && (y1 > 80 && y1 < 128));
+//
+//        if (state == CONTROLLED) {
+//            if (Gdx.input.isKeyPressed(Keys.A)) {
+//                accel.x = -ACCELERATION;
+//            } else if (Gdx.input.isKeyPressed(Keys.D) || right) {
+//                accel.x = ACCELERATION;
+//            } else {
+//                accel.x = 0;
+//            }
+//
+//            if (Gdx.input.isKeyPressed(Keys.W) || up) {
+//                accel.y = ACCELERATION;
+//            } else if (Gdx.input.isKeyPressed(Keys.S) || down) {
+//                accel.y = -ACCELERATION;
+//            } else {
+//                accel.y = 0;
+//            }
+//
+//            if (touch0) {
+//                if (dpadRect.contains(x0, y0)) {
+//                    float x = (x0 - 64) / 64;
+//                    float y = (y0 - 64) / 64;
+//                    float len = (float)Math.sqrt(x * x + y * y);
+//                    if (len != 0) {
+//                        x /= len;
+//                        y /= len;
+//                    } else {
+//                        x = 0;
+//                        y = 0;
+//                    }
+//                    vel.x = x * MAX_VELOCITY;
+//                    vel.y = y * MAX_VELOCITY;
+//                } else {
+//                    accel.x = 0;
+//                    accel.y = 0;
+//                }
+//           }
     }
 
 }
