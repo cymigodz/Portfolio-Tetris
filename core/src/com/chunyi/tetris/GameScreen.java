@@ -133,7 +133,7 @@ public class GameScreen implements Screen {
     private int [][] activeTetromino = new int[][]{{0,0},{0,0},{0,0},{0,0}};
     //Holds characteristics for active tetromino
     private int activeType, activeRotation;
-    private int nextSpawnType, nextSpawnX = 4, nextSpawnY = 18;
+    private int nextSpawnType;
     //Holds image/actor for all tetrominoes on the board
     private Image [][] gameBoard = new Image[10][20];
     private Image [] ghostTetromino = null;
@@ -148,7 +148,7 @@ public class GameScreen implements Screen {
         this.game = game;
 
         initializeScene();
-        initializeDevelopScene();
+        //initializeDevelopScene();
     }
 
     @Override
@@ -165,10 +165,9 @@ public class GameScreen implements Screen {
 
         inputHandler();
 
-        handleGhostTetromino();
+        //60Tick
         if(timer >= 1f) {
             timer -=1f;
-
             if(isGameOver){
 
             } else if(hasActiveTetromino) { //DROP CURRENT BLOCK or MAKE NEW BLOCK if not game over yet
@@ -177,14 +176,18 @@ public class GameScreen implements Screen {
                         lockTetromino(false);
                     }
                 }
-                newPieceTimer = 0.0f;
-            } else {
-                if(newPieceTimer >= 1f) {
-                    newPieceTimer -=1f;
-                    spawnTetrominoTemp();
-                }
             }
         }
+
+        //60 Tick but in seperate timer
+        if(!hasActiveTetromino && newPieceTimer >= 0.7f && !isGameOver){
+            newPieceTimer = 0.0f;
+            spawnTetromino();
+        }
+
+        //Real time to follow player input
+        handleGhostTetromino();
+
         stage.act(delta);
         stage.draw();
     }
@@ -221,19 +224,23 @@ public class GameScreen implements Screen {
 
 
 
-    private void spawnTetromino(int type, int rotation, Texture texture, int spawnCol, int spawnRow){
+    private void spawnTetromino(){
         if(hasActiveTetromino || isGameOver){
             return;
         }
 
+        int spawnCol, spawnRow = 18;
+        if(randNextSpawnType() == 0){
+            spawnCol = 3;
+        } else {
+            spawnCol = 4;
+        }
+
         //Validate Gameover
         for(int i = 0; i < 4; i++) {
-            Image tetromino = new Image(texture);
-
-
-
-            int col = spawnCol + PATTERN_TETROMINOES[type][rotation][i][0];
-            int row = spawnRow + PATTERN_TETROMINOES[type][rotation][i][1];
+            Image tetromino = new Image(TEXTURE_TETROMINOES[nextSpawnType]);
+            int col = spawnCol + PATTERN_TETROMINOES[nextSpawnType][1][i][0];
+            int row = spawnRow + PATTERN_TETROMINOES[nextSpawnType][1][i][1];
 
             //VALIDATE if the spawning slot already has a block
             if (gameBoard[col][row] != null) {
@@ -242,15 +249,14 @@ public class GameScreen implements Screen {
                 break;
             }
         }
-
         if(isGameOver){
             return;
         }
 
         for(int i = 0; i < 4; i++){
-            Image tetromino = new Image(texture);
-            int col = spawnCol + PATTERN_TETROMINOES[type][rotation][i][0];
-            int row = spawnRow + PATTERN_TETROMINOES[type][rotation][i][1];
+            Image tetromino = new Image(TEXTURE_TETROMINOES[nextSpawnType]);
+            int col = spawnCol + PATTERN_TETROMINOES[nextSpawnType][1][i][0];
+            int row = spawnRow + PATTERN_TETROMINOES[nextSpawnType][1][i][1];
 
 
             activeTetromino[i][0] = col;
@@ -266,21 +272,15 @@ public class GameScreen implements Screen {
             stage.addActor( gameBoard[col][row]);
         }
 
-        activeType = type;
-        activeRotation = rotation;
+        activeType = nextSpawnType;
+        activeRotation = 1;
         hasActiveTetromino = true;
-
-        Random random = new Random();
-        nextSpawnType = random.nextInt(7) + 1;
-        input_Type.setText(nextSpawnType+"");
     }
 
-    private void spawnTetrominoTemp(){
-        spawnTetromino(Integer.parseInt(input_Type.getText())-1,
-                Integer.parseInt(input_Rotation.getText())-1,
-                TEXTURE_TETROMINOES[Integer.parseInt(input_Type.getText())-1],
-                Integer.parseInt(input_X.getText()),
-                Integer.parseInt(input_Y.getText()));
+    private Integer randNextSpawnType(){
+        Random random = new Random();
+        nextSpawnType = random.nextInt(7);
+        return nextSpawnType;
     }
 
     private Image getActiveTetrominoImage(int pieceIteration) {
@@ -366,7 +366,7 @@ public class GameScreen implements Screen {
 //        } while(hasActiveTetromino);
         if(softDropTimer > 0.2f) {
 
-            Gdx.app.log("softdrop", softDropTimer + "");
+            //Gdx.app.log("softdrop", softDropTimer + "");
             softDropTimer -= 0.2f;
             if(dropTetrominoNatural()){
                 lockTetromino(false);
@@ -663,172 +663,173 @@ public class GameScreen implements Screen {
                 {0,0},{0,0},{0,0},{0,0}
         };
         hasActiveTetromino = false;
+        newPieceTimer = 0.0f;
         //VALIDATE Line Clear
         Gdx.app.log("Debug:","LOCK!");
     }
 
 
-    private void initializeDevelopScene(){
-        NinePatch btnPatch = new NinePatch(new Texture(Gdx.files.internal("sprite/uipack_fixed/PNG/grey_button06.png")),10,10,10,10);
-
-        inputStyle_Type = new TextField.TextFieldStyle(game.normalFont1, Color.BLACK,
-                new Image(new Texture(Gdx.files.internal("sprite/uipack_fixed/PNG/blue_tick.png"))).getDrawable(),
-                new Image(new Texture(Gdx.files.internal("sprite/puzzlepack/png/selectorA.png"))).getDrawable(),
-                new NinePatchDrawable(btnPatch));
-
-        input_Type = new TextField("1", inputStyle_Type);
-        input_Type.setHeight(game.normalFont1.getLineHeight()*2f);
-        input_Type.setPosition(background.getX(), background.getY()-input_Type.getHeight()*1.1f);
-        input_Type.setMaxLength(1);
-        input_Type.setWidth((new GlyphLayout(game.normalFont1, "555")).width);
-
-        input_Rotation = new TextField("1", inputStyle_Type);
-        input_Rotation.setHeight(game.normalFont1.getLineHeight()*2f);
-        input_Rotation.setPosition(input_Type.getX() + input_Type.getWidth(), background.getY()-input_Type.getHeight()*1.1f);
-        input_Rotation.setMaxLength(1);
-        input_Rotation.setWidth((new GlyphLayout(game.normalFont1, "555")).width);
-
-        input_X = new TextField(nextSpawnX+"", inputStyle_Type);
-        input_X.setHeight(game.normalFont1.getLineHeight()*2f);
-        input_X.setPosition(input_Rotation.getX() + input_Rotation.getWidth(), background.getY()-input_Type.getHeight()*1.1f);
-        input_X.setMaxLength(2);
-        input_X.setWidth((new GlyphLayout(game.normalFont1, "1234")).width);
-
-        input_Y = new TextField(nextSpawnY+"", inputStyle_Type);
-        input_Y.setHeight(game.normalFont1.getLineHeight()*2f);
-        input_Y.setPosition(input_X.getX() + input_X.getWidth(), background.getY()-input_Type.getHeight()*1.1f);
-        input_Y.setMaxLength(2);
-        input_Y.setWidth((new GlyphLayout(game.normalFont1, "1234")).width);
-
-
-        NinePatch upPatch = new NinePatch(new Texture(Gdx.files.internal("sprite/uipack_fixed/PNG/blue_button" + "09.png")),10,10,10,10);
-        NinePatchDrawable upPatchDrawable = new NinePatchDrawable(upPatch);
-        NinePatch downPatch = new NinePatch(new Texture(Gdx.files.internal("sprite/uipack_fixed/PNG/blue_button" + "10.png")),10,10,10,10);
-        NinePatchDrawable downPatchDrawable = new NinePatchDrawable(downPatch);
-        NinePatch overPatch = new NinePatch(new Texture(Gdx.files.internal("sprite/uipack_fixed/PNG/blue_button" + "11.png")),10,10,10,10);
-        NinePatchDrawable overPatchDrawable = new NinePatchDrawable(overPatch);
-
-        TextButton.TextButtonStyle mainMenuBtnStyle = new TextButton.TextButtonStyle();
-        mainMenuBtnStyle.up = upPatchDrawable;
-        mainMenuBtnStyle.down = downPatchDrawable;
-        mainMenuBtnStyle.over = overPatchDrawable;
-        mainMenuBtnStyle.font =  game.normalFont1;
-
-        rotateRBtn = new TextButton("R", mainMenuBtnStyle);
-        rotateRBtn.setWidth((new GlyphLayout(game.normalFont1, "123")).width);
-        rotateRBtn.setHeight(game.normalFont1.getLineHeight()*2f);
-        rotateRBtn.setPosition(input_Y.getX() + input_Y.getWidth(), background.getY()-input_Type.getHeight()*1.1f);
-        stage.addActor(rotateRBtn);
-        rotateRBtn.addListener(new InputListener(){
-
-            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-                Gdx.app.log("Input", "Game Screen : Rotate button pressed");
-                return true;
-            }
-
-            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-                //rotateTetromino(true);
-            }
-
-        });
-
-        lockBtn = new TextButton("L", mainMenuBtnStyle);
-        lockBtn.setWidth((new GlyphLayout(game.normalFont1, "123")).width);
-        lockBtn.setHeight(game.normalFont1.getLineHeight()*2f);
-        lockBtn.setPosition(rotateRBtn.getX() + rotateRBtn.getWidth(), background.getY()-input_Type.getHeight()*1.1f);
-        stage.addActor(lockBtn);
-        lockBtn.addListener(new InputListener(){
-
-            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-                Gdx.app.log("Input", "Game Screen : Lock button pressed");
-                return true;
-            }
-
-            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-                lockTetromino(true);
-            }
-
-        });
-
-        resetBtn = new TextButton("Rs", mainMenuBtnStyle);
-        resetBtn.setWidth((new GlyphLayout(game.normalFont1, "123")).width);
-        resetBtn.setHeight(game.normalFont1.getLineHeight()*2f);
-        resetBtn.setPosition(lockBtn.getX() + lockBtn.getWidth(), background.getY()-input_Type.getHeight()*1.1f);
-        stage.addActor(resetBtn);
-        resetBtn.addListener(new InputListener(){
-
-            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-                Gdx.app.log("Input", "Game Screen : Reset button pressed");
-                return true;
-            }
-
-            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-                resetGame();
-            }
-
-        });
-
-        dropBtn = new TextButton("D", mainMenuBtnStyle);
-        dropBtn.setWidth((new GlyphLayout(game.normalFont1, "123")).width);
-        dropBtn.setHeight(game.normalFont1.getLineHeight()*2f);
-        dropBtn.setPosition(resetBtn.getX() + resetBtn.getWidth(), background.getY()-input_Type.getHeight()*1.1f);
-        stage.addActor(dropBtn);
-        dropBtn.addListener(new InputListener(){
-
-            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-                Gdx.app.log("Input", "Game Screen : Drop button pressed");
-                return true;
-            }
-
-            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-                //dropTetrominoHard();
-            }
-
-        });
-
-        leftBtn = new TextButton("l", mainMenuBtnStyle);
-        leftBtn.setWidth((new GlyphLayout(game.normalFont1, "123")).width);
-        leftBtn.setHeight(game.normalFont1.getLineHeight()*2f);
-        leftBtn.setPosition(dropBtn.getX() + dropBtn.getWidth(), background.getY()-input_Type.getHeight()*1.1f);
-        stage.addActor(leftBtn);
-        leftBtn.addListener(new InputListener(){
-
-            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-                Gdx.app.log("Input", "Game Screen : Left button pressed");
-                return true;
-            }
-
-            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-                //moveTetromino(true);
-            }
-
-        });
-
-        rightBtn = new TextButton("r", mainMenuBtnStyle);
-        rightBtn.setWidth((new GlyphLayout(game.normalFont1, "123")).width);
-        rightBtn.setHeight(game.normalFont1.getLineHeight()*2f);
-        rightBtn.setPosition(leftBtn.getX() + leftBtn.getWidth(), background.getY()-input_Type.getHeight()*1.1f);
-        stage.addActor(rightBtn);
-        rightBtn.addListener(new InputListener(){
-
-            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-                Gdx.app.log("Input", "Game Screen : Right button pressed");
-                return true;
-            }
-
-            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-                //moveTetromino(false);
-            }
-
-        });
-
-
-
-        stage.addActor(input_Type);
-        stage.addActor(input_Rotation);
-        stage.addActor(input_X);
-        stage.addActor(input_Y);
-    }
+//    private void initializeDevelopScene(){
+//        NinePatch btnPatch = new NinePatch(new Texture(Gdx.files.internal("sprite/uipack_fixed/PNG/grey_button06.png")),10,10,10,10);
+//
+//        inputStyle_Type = new TextField.TextFieldStyle(game.normalFont1, Color.BLACK,
+//                new Image(new Texture(Gdx.files.internal("sprite/uipack_fixed/PNG/blue_tick.png"))).getDrawable(),
+//                new Image(new Texture(Gdx.files.internal("sprite/puzzlepack/png/selectorA.png"))).getDrawable(),
+//                new NinePatchDrawable(btnPatch));
+//
+//        input_Type = new TextField("1", inputStyle_Type);
+//        input_Type.setHeight(game.normalFont1.getLineHeight()*2f);
+//        input_Type.setPosition(background.getX(), background.getY()-input_Type.getHeight()*1.1f);
+//        input_Type.setMaxLength(1);
+//        input_Type.setWidth((new GlyphLayout(game.normalFont1, "555")).width);
+//
+//        input_Rotation = new TextField("1", inputStyle_Type);
+//        input_Rotation.setHeight(game.normalFont1.getLineHeight()*2f);
+//        input_Rotation.setPosition(input_Type.getX() + input_Type.getWidth(), background.getY()-input_Type.getHeight()*1.1f);
+//        input_Rotation.setMaxLength(1);
+//        input_Rotation.setWidth((new GlyphLayout(game.normalFont1, "555")).width);
+//
+//        input_X = new TextField(nextSpawnX+"", inputStyle_Type);
+//        input_X.setHeight(game.normalFont1.getLineHeight()*2f);
+//        input_X.setPosition(input_Rotation.getX() + input_Rotation.getWidth(), background.getY()-input_Type.getHeight()*1.1f);
+//        input_X.setMaxLength(2);
+//        input_X.setWidth((new GlyphLayout(game.normalFont1, "1234")).width);
+//
+//        input_Y = new TextField(nextSpawnY+"", inputStyle_Type);
+//        input_Y.setHeight(game.normalFont1.getLineHeight()*2f);
+//        input_Y.setPosition(input_X.getX() + input_X.getWidth(), background.getY()-input_Type.getHeight()*1.1f);
+//        input_Y.setMaxLength(2);
+//        input_Y.setWidth((new GlyphLayout(game.normalFont1, "1234")).width);
+//
+//
+//        NinePatch upPatch = new NinePatch(new Texture(Gdx.files.internal("sprite/uipack_fixed/PNG/blue_button" + "09.png")),10,10,10,10);
+//        NinePatchDrawable upPatchDrawable = new NinePatchDrawable(upPatch);
+//        NinePatch downPatch = new NinePatch(new Texture(Gdx.files.internal("sprite/uipack_fixed/PNG/blue_button" + "10.png")),10,10,10,10);
+//        NinePatchDrawable downPatchDrawable = new NinePatchDrawable(downPatch);
+//        NinePatch overPatch = new NinePatch(new Texture(Gdx.files.internal("sprite/uipack_fixed/PNG/blue_button" + "11.png")),10,10,10,10);
+//        NinePatchDrawable overPatchDrawable = new NinePatchDrawable(overPatch);
+//
+//        TextButton.TextButtonStyle mainMenuBtnStyle = new TextButton.TextButtonStyle();
+//        mainMenuBtnStyle.up = upPatchDrawable;
+//        mainMenuBtnStyle.down = downPatchDrawable;
+//        mainMenuBtnStyle.over = overPatchDrawable;
+//        mainMenuBtnStyle.font =  game.normalFont1;
+//
+//        rotateRBtn = new TextButton("R", mainMenuBtnStyle);
+//        rotateRBtn.setWidth((new GlyphLayout(game.normalFont1, "123")).width);
+//        rotateRBtn.setHeight(game.normalFont1.getLineHeight()*2f);
+//        rotateRBtn.setPosition(input_Y.getX() + input_Y.getWidth(), background.getY()-input_Type.getHeight()*1.1f);
+//        stage.addActor(rotateRBtn);
+//        rotateRBtn.addListener(new InputListener(){
+//
+//            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+//                Gdx.app.log("Input", "Game Screen : Rotate button pressed");
+//                return true;
+//            }
+//
+//            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
+//                //rotateTetromino(true);
+//            }
+//
+//        });
+//
+//        lockBtn = new TextButton("L", mainMenuBtnStyle);
+//        lockBtn.setWidth((new GlyphLayout(game.normalFont1, "123")).width);
+//        lockBtn.setHeight(game.normalFont1.getLineHeight()*2f);
+//        lockBtn.setPosition(rotateRBtn.getX() + rotateRBtn.getWidth(), background.getY()-input_Type.getHeight()*1.1f);
+//        stage.addActor(lockBtn);
+//        lockBtn.addListener(new InputListener(){
+//
+//            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+//                Gdx.app.log("Input", "Game Screen : Lock button pressed");
+//                return true;
+//            }
+//
+//            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
+//                lockTetromino(true);
+//            }
+//
+//        });
+//
+//        resetBtn = new TextButton("Rs", mainMenuBtnStyle);
+//        resetBtn.setWidth((new GlyphLayout(game.normalFont1, "123")).width);
+//        resetBtn.setHeight(game.normalFont1.getLineHeight()*2f);
+//        resetBtn.setPosition(lockBtn.getX() + lockBtn.getWidth(), background.getY()-input_Type.getHeight()*1.1f);
+//        stage.addActor(resetBtn);
+//        resetBtn.addListener(new InputListener(){
+//
+//            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+//                Gdx.app.log("Input", "Game Screen : Reset button pressed");
+//                return true;
+//            }
+//
+//            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
+//                resetGame();
+//            }
+//
+//        });
+//
+//        dropBtn = new TextButton("D", mainMenuBtnStyle);
+//        dropBtn.setWidth((new GlyphLayout(game.normalFont1, "123")).width);
+//        dropBtn.setHeight(game.normalFont1.getLineHeight()*2f);
+//        dropBtn.setPosition(resetBtn.getX() + resetBtn.getWidth(), background.getY()-input_Type.getHeight()*1.1f);
+//        stage.addActor(dropBtn);
+//        dropBtn.addListener(new InputListener(){
+//
+//            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+//                Gdx.app.log("Input", "Game Screen : Drop button pressed");
+//                return true;
+//            }
+//
+//            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
+//                //dropTetrominoHard();
+//            }
+//
+//        });
+//
+//        leftBtn = new TextButton("l", mainMenuBtnStyle);
+//        leftBtn.setWidth((new GlyphLayout(game.normalFont1, "123")).width);
+//        leftBtn.setHeight(game.normalFont1.getLineHeight()*2f);
+//        leftBtn.setPosition(dropBtn.getX() + dropBtn.getWidth(), background.getY()-input_Type.getHeight()*1.1f);
+//        stage.addActor(leftBtn);
+//        leftBtn.addListener(new InputListener(){
+//
+//            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+//                Gdx.app.log("Input", "Game Screen : Left button pressed");
+//                return true;
+//            }
+//
+//            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
+//                //moveTetromino(true);
+//            }
+//
+//        });
+//
+//        rightBtn = new TextButton("r", mainMenuBtnStyle);
+//        rightBtn.setWidth((new GlyphLayout(game.normalFont1, "123")).width);
+//        rightBtn.setHeight(game.normalFont1.getLineHeight()*2f);
+//        rightBtn.setPosition(leftBtn.getX() + leftBtn.getWidth(), background.getY()-input_Type.getHeight()*1.1f);
+//        stage.addActor(rightBtn);
+//        rightBtn.addListener(new InputListener(){
+//
+//            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+//                Gdx.app.log("Input", "Game Screen : Right button pressed");
+//                return true;
+//            }
+//
+//            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
+//                //moveTetromino(false);
+//            }
+//
+//        });
+//
+//
+//
+//        stage.addActor(input_Type);
+//        stage.addActor(input_Rotation);
+//        stage.addActor(input_X);
+//        stage.addActor(input_Y);
+//    }
 
     private void initializeScene(){
 
@@ -879,7 +880,7 @@ public class GameScreen implements Screen {
     private void resetGame(){
         stage.dispose();
         initializeScene();
-        initializeDevelopScene();
+        //initializeDevelopScene();
         activeTetromino = new int[][]{{0,0},{0,0},{0,0},{0,0}};
         gameBoard = new Image[10][20];
         hasActiveTetromino = false;
@@ -888,25 +889,25 @@ public class GameScreen implements Screen {
 
     private void inputHandler() {
 
-        if ((Gdx.input.isKeyJustPressed(Keys.LEFT) || leftBtn.isPressed()) && hasActiveTetromino && !isGameOver) {
-            Gdx.app.log("Input - Keyboard : ", "Left arrow key");
+        if (Gdx.input.isKeyJustPressed(Keys.LEFT) && hasActiveTetromino && !isGameOver) {
+            //Gdx.app.log("Input - Keyboard : ", "Left arrow key");
             moveTetromino(true);
             return;
         }
 
-        if ((Gdx.input.isKeyJustPressed(Keys.RIGHT) || rightBtn.isPressed()) && hasActiveTetromino && !isGameOver) {
-            Gdx.app.log("Input - Keyboard : ", "Right arrow key");
+        if (Gdx.input.isKeyJustPressed(Keys.RIGHT) && hasActiveTetromino && !isGameOver) {
+            //Gdx.app.log("Input - Keyboard : ", "Right arrow key");
             moveTetromino(false);
             return;
         }
 
-        if ((Gdx.input.isKeyJustPressed(Keys.UP) || rotateRBtn.isPressed()) && hasActiveTetromino && !isGameOver) {
-            Gdx.app.log("Input - Keyboard : ", "Up arrow key");
+        if (Gdx.input.isKeyJustPressed(Keys.UP) && hasActiveTetromino && !isGameOver) {
+            //Gdx.app.log("Input - Keyboard : ", "Up arrow key");
             rotateTetromino(true);
             return;
         }
 
-        if ((Gdx.input.isKeyPressed(Keys.DOWN)) && hasActiveTetromino && !isGameOver) {
+        if (Gdx.input.isKeyPressed(Keys.DOWN) && hasActiveTetromino && !isGameOver) {
             //Gdx.app.log("Input - Keyboard : ", "Down arrow key");
             if(!isSoftDropping) {
                 softDropTimer = 0.0f;
@@ -919,8 +920,8 @@ public class GameScreen implements Screen {
         }
 
 
-        if ((Gdx.input.isKeyJustPressed(Keys.SPACE) || dropBtn.isPressed()) && hasActiveTetromino && !isGameOver) {
-            Gdx.app.log("Input - Keyboard : ", "Space bar key");
+        if (Gdx.input.isKeyJustPressed(Keys.SPACE) && hasActiveTetromino && !isGameOver) {
+            //Gdx.app.log("Input - Keyboard : ", "Space bar key");
             dropTetrominoHard();
             return;
         }
