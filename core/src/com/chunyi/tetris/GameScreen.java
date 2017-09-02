@@ -117,6 +117,7 @@ public class GameScreen implements Screen {
     private Float rotateTimer;
     private Float keyRepeatTimer;
     private Float softDropTimer;
+    private Float newPieceTimer;
 
     //DEVELOPING STAGE ELEMENTS
     private TextField input_Type, input_Rotation, input_X, input_Y;
@@ -135,11 +136,12 @@ public class GameScreen implements Screen {
     private int nextSpawnType, nextSpawnX = 4, nextSpawnY = 18;
     //Holds image/actor for all tetrominoes on the board
     private Image [][] gameBoard = new Image[10][20];
-
+    private Image [] ghostTetromino = null;
 
     //FLAGS
     private Boolean hasActiveTetromino = false;
     private Boolean isGameOver = false;
+    private Boolean isSoftDropping = false;
 
 
     public GameScreen(final TetrisGame game) {
@@ -159,20 +161,28 @@ public class GameScreen implements Screen {
         rotateTimer +=delta;
         keyRepeatTimer += delta;
         softDropTimer += delta;
+        newPieceTimer += delta;
 
         inputHandler();
 
-        if(timer >= 1) {
-            timer = 0.0f;
+        handleGhostTetromino();
+        if(timer >= 1f) {
+            timer -=1f;
 
             if(isGameOver){
 
             } else if(hasActiveTetromino) { //DROP CURRENT BLOCK or MAKE NEW BLOCK if not game over yet
-                if(dropTetrominoNatural()){
-                    lockTetromino(false);
-                };
+                if(!isSoftDropping) {
+                    if (dropTetrominoNatural()) {
+                        lockTetromino(false);
+                    }
+                }
+                newPieceTimer = 0.0f;
             } else {
-                spawnTetrominoTemp();
+                if(newPieceTimer >= 1f) {
+                    newPieceTimer -=1f;
+                    spawnTetrominoTemp();
+                }
             }
         }
         stage.act(delta);
@@ -354,10 +364,76 @@ public class GameScreen implements Screen {
 //        do{
 //            dropTetrominoNatural();
 //        } while(hasActiveTetromino);
-        if(softDropTimer > 0.1f) {
-            softDropTimer = 0.0f;
-            dropTetrominoNatural();
+        if(softDropTimer > 0.2f) {
+
+            Gdx.app.log("softdrop", softDropTimer + "");
+            softDropTimer -= 0.2f;
+            if(dropTetrominoNatural()){
+                lockTetromino(false);
+            };
         }
+    }
+
+
+    private void handleGhostTetromino(){
+        if(!hasActiveTetromino){
+            if(ghostTetromino!= null){
+                for(int i = 0; i < 4; i++){
+                    ghostTetromino[i].remove();
+                }
+                ghostTetromino = null;
+            }
+            return;
+        }
+
+        if(ghostTetromino == null) {
+            ghostTetromino = new Image[4];
+            for (int i = 0; i < 4; i++) {
+                ghostTetromino[i] = new Image(new Texture(Gdx.files.internal("sprite/sokobanpack/PNG/Default size/Environment/environment_06.png")));
+                ghostTetromino[i].setSize(varColWidth, varRowHeight);
+                ghostTetromino[i].setX(getActiveTetrominoImage(i).getX());
+                ghostTetromino[i].setY(getActiveTetrominoImage(i).getY());
+                stage.addActor(ghostTetromino[i]);
+            }
+        }
+        Image blockBelow;
+        boolean canDrop = true;
+        int yOffsetGhost = 0;
+        for(int y = 19; y >= 0; y --){
+
+            for(int i = 0; i < 4; i ++){
+                if(activeTetromino[i][1] + yOffsetGhost - 1 < 0){
+                    canDrop = false;
+                    break;
+                }
+                blockBelow = gameBoard[activeTetromino[i][0]][activeTetromino[i][1] + yOffsetGhost - 1];
+                if(blockBelow != null){
+
+                    Boolean isOwnBlock = false;
+                    for(int i2 = 0; i2 < 4; i2 ++) {
+                        if((activeTetromino[i][0]) == (activeTetromino[i2][0]) &&
+                                (activeTetromino[i][1]-1) == (activeTetromino[i2][1])){
+                            isOwnBlock = true;
+                        }
+                    }
+
+                    if(!isOwnBlock) {
+                        canDrop = false;
+                        break;
+                    }
+                }
+            }
+
+            if(canDrop){
+                yOffsetGhost --;
+            }
+        }
+        for(int i = 0; i < 4; i ++){
+            ghostTetromino[i].setX(getActiveTetrominoImage(i).getX());
+            ghostTetromino[i].setY(coordRow[activeTetromino[i][1] + yOffsetGhost]);
+        }
+
+
     }
 
     private void rotateTetromino(boolean clockwise){
@@ -407,23 +483,41 @@ public class GameScreen implements Screen {
             newX = activeTetromino[i][0] + xOffsetHolder[i];
             newY = activeTetromino[i][1] + yOffsetHolder[i];
 
+
+
             //Check If out of bound
             //Out of bound alone should never deny a rotate
-            if(newX < 0){
-                xOffsetToRotate = newX*(-1);
-            } else if(newX > 9){
-                xOffsetToRotate = newX - 9;
+            if (newX < 0) {
+                if(xOffsetToRotate < newX * (-1)){
+                    xOffsetToRotate = newX *(-1);
+                }
+            } else if (newX > 9) {
+                if(xOffsetToRotate > 9 - newX) {
+                    xOffsetToRotate = 9 - newX ;
+                }
             }
 
-            if(newY < 0){
-                yOffsetToRotate = newY*(-1);
-            } else if(newY > 19){
-                yOffsetToRotate = newY - 19;
+            if (newY < 0) {
+                if(yOffsetToRotate < newY * (-1)){
+                    yOffsetToRotate = newY *(-1);
+                }
+            } else if (newY > 19) {
+                if(yOffsetToRotate > 19 - newY) {
+                    yOffsetToRotate = 19 - newY;
+                }
             }
+        }
+
+        for(int i = 0; i < 4; i ++) {
+            int newX, newY;
+            newX = activeTetromino[i][0] + xOffsetHolder[i];
+            newY = activeTetromino[i][1] + yOffsetHolder[i];
 
             //Check collision based on post-oob-check coordinate
             newX += xOffsetToRotate;
             newY += yOffsetToRotate;
+
+
             //Check If Collide into other pieces
             Image targetBlock = gameBoard[newX][newY];
             if(targetBlock != null){
@@ -448,9 +542,14 @@ public class GameScreen implements Screen {
         }
 
 
+
         //Move image to new position
         //Remove old location in gameBoard
         for(int i = 0; i < 4; i ++){
+
+            xOffsetHolder[i] += xOffsetToRotate;
+            yOffsetHolder[i] += yOffsetToRotate;
+
             holder[i].setPosition( //Setting position
                     holder[i].getX()+xOffsetHolder[i]*varColWidth, //calculate difference for x gird, then multiply by the grid size
                     holder[i].getY()+yOffsetHolder[i]*varRowHeight); //calculate difference for y gird, then multiply by the grid size
@@ -461,8 +560,9 @@ public class GameScreen implements Screen {
         //Update gameBoard and activeTetromino
         //Necessary to do in seperate loop because, if a tetromino has a block above/below each other, moving the upper
         //one down will overwrite the lower one, and its lost.
-        for(int i = 0; i <= 3; i ++){
-            gameBoard[activeTetromino[i][0]+xOffsetHolder[i]][activeTetromino[i][1]+yOffsetHolder[i]] = holder[i];
+        for(int i = 0; i < 4; i ++){
+            gameBoard[activeTetromino[i][0]+xOffsetHolder[i]]
+                    [activeTetromino[i][1]+yOffsetHolder[i]] = holder[i];
             activeTetromino[i][0] += xOffsetHolder[i];
             activeTetromino[i][1] += yOffsetHolder[i];
         }
@@ -563,7 +663,6 @@ public class GameScreen implements Screen {
                 {0,0},{0,0},{0,0},{0,0}
         };
         hasActiveTetromino = false;
-
         //VALIDATE Line Clear
         Gdx.app.log("Debug:","LOCK!");
     }
@@ -774,6 +873,7 @@ public class GameScreen implements Screen {
         rotateTimer = 0.0f;
         keyRepeatTimer = 0.0f;
         softDropTimer = 0.0f;
+        newPieceTimer = 0.0f;
     }
 
     private void resetGame(){
@@ -807,9 +907,15 @@ public class GameScreen implements Screen {
         }
 
         if ((Gdx.input.isKeyPressed(Keys.DOWN)) && hasActiveTetromino && !isGameOver) {
-            Gdx.app.log("Input - Keyboard : ", "Down arrow key");
+            //Gdx.app.log("Input - Keyboard : ", "Down arrow key");
+            if(!isSoftDropping) {
+                softDropTimer = 0.0f;
+                isSoftDropping = true;
+            }
             dropTetrominoSoft();
             return;
+        } else{
+            isSoftDropping = false;
         }
 
 
