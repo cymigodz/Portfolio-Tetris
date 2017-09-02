@@ -116,6 +116,7 @@ public class GameScreen implements Screen {
     private Float timer;
     private Float rotateTimer;
     private Float keyRepeatTimer;
+    private Float softDropTimer;
 
     //DEVELOPING STAGE ELEMENTS
     private TextField input_Type, input_Rotation, input_X, input_Y;
@@ -157,8 +158,10 @@ public class GameScreen implements Screen {
         timer += delta;
         rotateTimer +=delta;
         keyRepeatTimer += delta;
+        softDropTimer += delta;
 
         inputHandler();
+
         if(timer >= 1) {
             timer = 0.0f;
 
@@ -348,7 +351,13 @@ public class GameScreen implements Screen {
     }
 
     private void dropTetrominoSoft(){
-
+//        do{
+//            dropTetrominoNatural();
+//        } while(hasActiveTetromino);
+        if(softDropTimer > 0.1f) {
+            softDropTimer = 0.0f;
+            dropTetrominoNatural();
+        }
     }
 
     private void rotateTetromino(boolean clockwise){
@@ -764,6 +773,7 @@ public class GameScreen implements Screen {
         timer = 0.0f;
         rotateTimer = 0.0f;
         keyRepeatTimer = 0.0f;
+        softDropTimer = 0.0f;
     }
 
     private void resetGame(){
@@ -795,6 +805,13 @@ public class GameScreen implements Screen {
             rotateTetromino(true);
             return;
         }
+
+        if ((Gdx.input.isKeyPressed(Keys.DOWN)) && hasActiveTetromino && !isGameOver) {
+            Gdx.app.log("Input - Keyboard : ", "Down arrow key");
+            dropTetrominoSoft();
+            return;
+        }
+
 
         if ((Gdx.input.isKeyJustPressed(Keys.SPACE) || dropBtn.isPressed()) && hasActiveTetromino && !isGameOver) {
             Gdx.app.log("Input - Keyboard : ", "Space bar key");
