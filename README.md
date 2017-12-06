@@ -1,3 +1,6 @@
+# Latest Release
+[2017-12-06](https://github.com/cymigodz/Portfolio-Tetris/releases)
+
 # Project
 This is the first game of all the others you see in my repository.
 
