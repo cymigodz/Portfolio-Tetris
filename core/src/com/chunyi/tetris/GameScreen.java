@@ -149,7 +149,7 @@ public class GameScreen implements Screen {
         this.game = game;
 
         initializeScene();
-        //initializeDevelopScene();
+        initializeDevelopScene();
     }
 
     @Override
@@ -393,7 +393,7 @@ public class GameScreen implements Screen {
         if(ghostTetromino == null) {
             ghostTetromino = new Image[4];
             for (int i = 0; i < 4; i++) {
-                ghostTetromino[i] = new Image(new Texture(Gdx.files.internal("sprite/sokobanpack/PNG/Default size/Environment/environment_06.png")));
+                ghostTetromino[i] = new Image(new Texture(Gdx.files.internal("sprite/sokobanpack/PNG/Default size/Environment/environment_03.png")));
                 ghostTetromino[i].setSize(varColWidth, varRowHeight);
                 ghostTetromino[i].setX(getActiveTetrominoImage(i).getX());
                 ghostTetromino[i].setY(getActiveTetrominoImage(i).getY());
@@ -674,14 +674,14 @@ public class GameScreen implements Screen {
     }
 
 
-//    private void initializeDevelopScene(){
-//        NinePatch btnPatch = new NinePatch(new Texture(Gdx.files.internal("sprite/uipack_fixed/PNG/grey_button06.png")),10,10,10,10);
-//
-//        inputStyle_Type = new TextField.TextFieldStyle(game.normalFont1, Color.BLACK,
-//                new Image(new Texture(Gdx.files.internal("sprite/uipack_fixed/PNG/blue_tick.png"))).getDrawable(),
-//                new Image(new Texture(Gdx.files.internal("sprite/puzzlepack/png/selectorA.png"))).getDrawable(),
-//                new NinePatchDrawable(btnPatch));
-//
+    private void initializeDevelopScene(){
+        NinePatch btnPatch = new NinePatch(new Texture(Gdx.files.internal("sprite/uipack_fixed/PNG/grey_button06.png")),10,10,10,10);
+
+        inputStyle_Type = new TextField.TextFieldStyle(game.normalFont1, Color.BLACK,
+                new Image(new Texture(Gdx.files.internal("sprite/uipack_fixed/PNG/blue_tick.png"))).getDrawable(),
+                new Image(new Texture(Gdx.files.internal("sprite/puzzlepack/png/selectorA.png"))).getDrawable(),
+                new NinePatchDrawable(btnPatch));
+
 //        input_Type = new TextField("1", inputStyle_Type);
 //        input_Type.setHeight(game.normalFont1.getLineHeight()*2f);
 //        input_Type.setPosition(background.getX(), background.getY()-input_Type.getHeight()*1.1f);
@@ -705,136 +705,136 @@ public class GameScreen implements Screen {
 //        input_Y.setPosition(input_X.getX() + input_X.getWidth(), background.getY()-input_Type.getHeight()*1.1f);
 //        input_Y.setMaxLength(2);
 //        input_Y.setWidth((new GlyphLayout(game.normalFont1, "1234")).width);
-//
-//
-//        NinePatch upPatch = new NinePatch(new Texture(Gdx.files.internal("sprite/uipack_fixed/PNG/blue_button" + "09.png")),10,10,10,10);
-//        NinePatchDrawable upPatchDrawable = new NinePatchDrawable(upPatch);
-//        NinePatch downPatch = new NinePatch(new Texture(Gdx.files.internal("sprite/uipack_fixed/PNG/blue_button" + "10.png")),10,10,10,10);
-//        NinePatchDrawable downPatchDrawable = new NinePatchDrawable(downPatch);
-//        NinePatch overPatch = new NinePatch(new Texture(Gdx.files.internal("sprite/uipack_fixed/PNG/blue_button" + "11.png")),10,10,10,10);
-//        NinePatchDrawable overPatchDrawable = new NinePatchDrawable(overPatch);
-//
-//        TextButton.TextButtonStyle mainMenuBtnStyle = new TextButton.TextButtonStyle();
-//        mainMenuBtnStyle.up = upPatchDrawable;
-//        mainMenuBtnStyle.down = downPatchDrawable;
-//        mainMenuBtnStyle.over = overPatchDrawable;
-//        mainMenuBtnStyle.font =  game.normalFont1;
-//
-//        rotateRBtn = new TextButton("R", mainMenuBtnStyle);
-//        rotateRBtn.setWidth((new GlyphLayout(game.normalFont1, "123")).width);
-//        rotateRBtn.setHeight(game.normalFont1.getLineHeight()*2f);
-//        rotateRBtn.setPosition(input_Y.getX() + input_Y.getWidth(), background.getY()-input_Type.getHeight()*1.1f);
-//        stage.addActor(rotateRBtn);
-//        rotateRBtn.addListener(new InputListener(){
-//
-//            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-//                Gdx.app.log("Input", "Game Screen : Rotate button pressed");
-//                return true;
-//            }
-//
-//            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-//                //rotateTetromino(true);
-//            }
-//
-//        });
-//
-//        lockBtn = new TextButton("L", mainMenuBtnStyle);
-//        lockBtn.setWidth((new GlyphLayout(game.normalFont1, "123")).width);
-//        lockBtn.setHeight(game.normalFont1.getLineHeight()*2f);
-//        lockBtn.setPosition(rotateRBtn.getX() + rotateRBtn.getWidth(), background.getY()-input_Type.getHeight()*1.1f);
-//        stage.addActor(lockBtn);
-//        lockBtn.addListener(new InputListener(){
-//
-//            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-//                Gdx.app.log("Input", "Game Screen : Lock button pressed");
-//                return true;
-//            }
-//
-//            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-//                lockTetromino(true);
-//            }
-//
-//        });
-//
-//        resetBtn = new TextButton("Rs", mainMenuBtnStyle);
-//        resetBtn.setWidth((new GlyphLayout(game.normalFont1, "123")).width);
-//        resetBtn.setHeight(game.normalFont1.getLineHeight()*2f);
-//        resetBtn.setPosition(lockBtn.getX() + lockBtn.getWidth(), background.getY()-input_Type.getHeight()*1.1f);
-//        stage.addActor(resetBtn);
-//        resetBtn.addListener(new InputListener(){
-//
-//            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-//                Gdx.app.log("Input", "Game Screen : Reset button pressed");
-//                return true;
-//            }
-//
-//            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-//                resetGame();
-//            }
-//
-//        });
-//
-//        dropBtn = new TextButton("D", mainMenuBtnStyle);
-//        dropBtn.setWidth((new GlyphLayout(game.normalFont1, "123")).width);
-//        dropBtn.setHeight(game.normalFont1.getLineHeight()*2f);
-//        dropBtn.setPosition(resetBtn.getX() + resetBtn.getWidth(), background.getY()-input_Type.getHeight()*1.1f);
-//        stage.addActor(dropBtn);
-//        dropBtn.addListener(new InputListener(){
-//
-//            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-//                Gdx.app.log("Input", "Game Screen : Drop button pressed");
-//                return true;
-//            }
-//
-//            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-//                //dropTetrominoHard();
-//            }
-//
-//        });
-//
-//        leftBtn = new TextButton("l", mainMenuBtnStyle);
-//        leftBtn.setWidth((new GlyphLayout(game.normalFont1, "123")).width);
-//        leftBtn.setHeight(game.normalFont1.getLineHeight()*2f);
-//        leftBtn.setPosition(dropBtn.getX() + dropBtn.getWidth(), background.getY()-input_Type.getHeight()*1.1f);
-//        stage.addActor(leftBtn);
-//        leftBtn.addListener(new InputListener(){
-//
-//            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-//                Gdx.app.log("Input", "Game Screen : Left button pressed");
-//                return true;
-//            }
-//
-//            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-//                //moveTetromino(true);
-//            }
-//
-//        });
-//
-//        rightBtn = new TextButton("r", mainMenuBtnStyle);
-//        rightBtn.setWidth((new GlyphLayout(game.normalFont1, "123")).width);
-//        rightBtn.setHeight(game.normalFont1.getLineHeight()*2f);
-//        rightBtn.setPosition(leftBtn.getX() + leftBtn.getWidth(), background.getY()-input_Type.getHeight()*1.1f);
-//        stage.addActor(rightBtn);
-//        rightBtn.addListener(new InputListener(){
-//
-//            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-//                Gdx.app.log("Input", "Game Screen : Right button pressed");
-//                return true;
-//            }
-//
-//            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-//                //moveTetromino(false);
-//            }
-//
-//        });
-//
-//
+
+
+        NinePatch upPatch = new NinePatch(new Texture(Gdx.files.internal("sprite/uipack_fixed/PNG/blue_button" + "09.png")),10,10,10,10);
+        NinePatchDrawable upPatchDrawable = new NinePatchDrawable(upPatch);
+        NinePatch downPatch = new NinePatch(new Texture(Gdx.files.internal("sprite/uipack_fixed/PNG/blue_button" + "10.png")),10,10,10,10);
+        NinePatchDrawable downPatchDrawable = new NinePatchDrawable(downPatch);
+        NinePatch overPatch = new NinePatch(new Texture(Gdx.files.internal("sprite/uipack_fixed/PNG/blue_button" + "11.png")),10,10,10,10);
+        NinePatchDrawable overPatchDrawable = new NinePatchDrawable(overPatch);
+
+        TextButton.TextButtonStyle mainMenuBtnStyle = new TextButton.TextButtonStyle();
+        mainMenuBtnStyle.up = upPatchDrawable;
+        mainMenuBtnStyle.down = downPatchDrawable;
+        mainMenuBtnStyle.over = overPatchDrawable;
+        mainMenuBtnStyle.font =  game.normalFont1;
+
+        rotateRBtn = new TextButton("Rotate", mainMenuBtnStyle);
+        rotateRBtn.setWidth((new GlyphLayout(game.normalFont1, "Rotate1")).width);
+        rotateRBtn.setHeight(game.normalFont1.getLineHeight()*2f);
+        rotateRBtn.setPosition(background.getX(), background.getY()-(game.normalFont1.getLineHeight()*2f)*1.1f);
+        stage.addActor(rotateRBtn);
+        rotateRBtn.addListener(new InputListener(){
+
+            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+                Gdx.app.log("Input", "Game Screen : Rotate button pressed");
+                return true;
+            }
+
+            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
+                rotateTetromino(true);
+            }
+
+        });
+
+        lockBtn = new TextButton("Lock", mainMenuBtnStyle);
+        lockBtn.setWidth((new GlyphLayout(game.normalFont1, "Lock1")).width);
+        lockBtn.setHeight(game.normalFont1.getLineHeight()*2f);
+        lockBtn.setPosition(rotateRBtn.getX() + rotateRBtn.getWidth(), background.getY()-(game.normalFont1.getLineHeight()*2f)*1.1f);
+        stage.addActor(lockBtn);
+        lockBtn.addListener(new InputListener(){
+
+            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+                Gdx.app.log("Input", "Game Screen : Lock button pressed");
+                return true;
+            }
+
+            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
+                lockTetromino(true);
+            }
+
+        });
+
+        resetBtn = new TextButton("Re", mainMenuBtnStyle);
+        resetBtn.setWidth((new GlyphLayout(game.normalFont1, "RE1")).width);
+        resetBtn.setHeight(game.normalFont1.getLineHeight()*2f);
+        resetBtn.setPosition(lockBtn.getX() + lockBtn.getWidth(), background.getY()-(game.normalFont1.getLineHeight()*2f)*1.1f);
+        stage.addActor(resetBtn);
+        resetBtn.addListener(new InputListener(){
+
+            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+                Gdx.app.log("Input", "Game Screen : Reset button pressed");
+                return true;
+            }
+
+            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
+                resetGame();
+            }
+
+        });
+
+        dropBtn = new TextButton("Drop", mainMenuBtnStyle);
+        dropBtn.setWidth((new GlyphLayout(game.normalFont1, "Down123")).width);
+        dropBtn.setHeight(game.normalFont1.getLineHeight()*2f);
+        dropBtn.setPosition(resetBtn.getX() + resetBtn.getWidth(), background.getY()-(game.normalFont1.getLineHeight()*2f)*1.1f);
+        stage.addActor(dropBtn);
+        dropBtn.addListener(new InputListener(){
+
+            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+                Gdx.app.log("Input", "Game Screen : Drop button pressed");
+                return true;
+            }
+
+            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
+                dropTetrominoHard();
+            }
+
+        });
+
+        leftBtn = new TextButton("L", mainMenuBtnStyle);
+        leftBtn.setWidth((new GlyphLayout(game.normalFont1, "123")).width);
+        leftBtn.setHeight(game.normalFont1.getLineHeight()*2f);
+        leftBtn.setPosition(dropBtn.getX() + dropBtn.getWidth(), background.getY()-(game.normalFont1.getLineHeight()*2f)*1.1f);
+        stage.addActor(leftBtn);
+        leftBtn.addListener(new InputListener(){
+
+            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+                Gdx.app.log("Input", "Game Screen : Left button pressed");
+                return true;
+            }
+
+            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
+                moveTetromino(true);
+            }
+
+        });
+
+        rightBtn = new TextButton("R", mainMenuBtnStyle);
+        rightBtn.setWidth((new GlyphLayout(game.normalFont1, "123")).width);
+        rightBtn.setHeight(game.normalFont1.getLineHeight()*2f);
+        rightBtn.setPosition(leftBtn.getX() + leftBtn.getWidth(), background.getY()-(game.normalFont1.getLineHeight()*2f)*1.1f);
+        stage.addActor(rightBtn);
+        rightBtn.addListener(new InputListener(){
+
+            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+                Gdx.app.log("Input", "Game Screen : Right button pressed");
+                return true;
+            }
+
+            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
+                moveTetromino(false);
+            }
+
+        });
+
+
 //
 //        stage.addActor(input_Type);
 //        stage.addActor(input_Rotation);
 //        stage.addActor(input_X);
 //        stage.addActor(input_Y);
-//    }
+    }
 
     private void initializeScene(){
 
@@ -886,7 +886,7 @@ public class GameScreen implements Screen {
     private void resetGame(){
         stage.dispose();
         initializeScene();
-        //initializeDevelopScene();
+        initializeDevelopScene();
         activeTetromino = new int[][]{{0,0},{0,0},{0,0},{0,0}};
         gameBoard = new Image[10][20];
         hasActiveTetromino = false;
@@ -915,7 +915,7 @@ public class GameScreen implements Screen {
 
         if (Gdx.input.isKeyPressed(Keys.LEFT) && hasActiveTetromino && !isGameOver) {
             //Gdx.app.log("Input - Keyboard : ", "Left arrow key");
-            if((keyRepeatTimer > 0.5f || isSoftDropping) && autoRepeatTimer > 0.03f)  {
+            if((keyRepeatTimer > 0.3f || isSoftDropping) && autoRepeatTimer > 0.03f)  {
                 autoRepeatTimer = 0.0f;
                 moveTetromino(true);
             }
@@ -924,7 +924,7 @@ public class GameScreen implements Screen {
         } else if (Gdx.input.isKeyPressed(Keys.RIGHT) && hasActiveTetromino && !isGameOver) {
             //Gdx.app.log("Input - Keyboard : ", "Right arrow key");
 
-            if((keyRepeatTimer > 0.5f || isSoftDropping) && autoRepeatTimer > 0.03f)  {
+            if((keyRepeatTimer > 0.3f || isSoftDropping) && autoRepeatTimer > 0.03f)  {
                 autoRepeatTimer = 0.0f;
                 moveTetromino(false);
             }
